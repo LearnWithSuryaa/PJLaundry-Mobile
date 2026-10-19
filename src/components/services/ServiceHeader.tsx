@@ -1,8 +1,9 @@
 import { useRouter } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
-import { ONBOARDING_COLORS } from "../../features/onboarding/onboardingData";
+import BrandLogo from "../common/BrandLogo";
+import { COLORS, RADIUS, TOUCH_TARGET } from "../../theme/tokens";
 
 export default function ServiceHeader() {
   const router = useRouter();
@@ -22,18 +23,17 @@ export default function ServiceHeader() {
         accessibilityLabel="Kembali ke halaman sebelumnya"
         onPress={handleGoBack}
         style={({ pressed }) => [
-          styles.touchTarget44,
+          styles.touchTarget,
           pressed && styles.pressed,
         ]}
       >
         <View style={styles.backButtonSurface}>
-          <ArrowLeft size={22} color={ONBOARDING_COLORS.text} />
+          <ArrowLeft size={20} color={COLORS.textPrimary} />
         </View>
       </Pressable>
 
       <View style={styles.brandContainer}>
-        <Text style={styles.brandTitle}>PJLaundry</Text>
-        <Text style={styles.brandSubtitle}>Katalog Layanan Resmi</Text>
+        <BrandLogo size={28} subtitle="Katalog Layanan Resmi" />
       </View>
 
       <View style={styles.headerRightPlaceholder} />
@@ -43,49 +43,40 @@ export default function ServiceHeader() {
 
 const styles = StyleSheet.create({
   header: {
-    minHeight: 56,
+    minHeight: 64,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 10,
+    backgroundColor: COLORS.surfacePrimary,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(51, 51, 51, 0.08)",
+    borderBottomColor: COLORS.borderDefault,
   },
-  touchTarget44: {
-    minWidth: 44,
-    minHeight: 44,
+  touchTarget: {
+    minWidth: TOUCH_TARGET.min,
+    minHeight: TOUCH_TARGET.min,
     alignItems: "center",
     justifyContent: "center",
   },
   backButtonSurface: {
     width: 44,
     height: 44,
-    borderRadius: 12,
-    backgroundColor: ONBOARDING_COLORS.surface,
+    borderRadius: RADIUS.input,
+    backgroundColor: COLORS.surfaceSecondary,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
-    elevation: 2,
+    borderColor: COLORS.borderDefault,
   },
   brandContainer: {
     alignItems: "center",
-  },
-  brandTitle: {
-    color: ONBOARDING_COLORS.text,
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  brandSubtitle: {
-    color: "#555555",
-    fontSize: 12,
-    marginTop: 2,
+    justifyContent: "center",
   },
   headerRightPlaceholder: {
-    width: 44,
+    width: TOUCH_TARGET.min,
   },
   pressed: {
-    opacity: 0.82,
+    opacity: 0.75,
   },
 });

@@ -14,13 +14,12 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
+import BrandLogo from "../components/common/BrandLogo";
 import OnboardingActions from "../components/onboarding/OnboardingActions";
 import OnboardingStep from "../components/onboarding/OnboardingStep";
 import PaginationDots from "../components/onboarding/PaginationDots";
-import {
-  ONBOARDING_COLORS,
-  ONBOARDING_STEPS,
-} from "../features/onboarding/onboardingData";
+import { ONBOARDING_STEPS } from "../features/onboarding/onboardingData";
+import { COLORS, RADIUS, TOUCH_TARGET } from "../theme/tokens";
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -57,18 +56,12 @@ export default function OnboardingScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={ONBOARDING_COLORS.background}
-      />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.bgPrimary} />
 
       <View style={styles.container}>
-        {/* Header with Brand & Skip Button */}
+        {/* Header with Official Logo & Accessible Skip Button */}
         <View style={styles.header}>
-          <View style={styles.brandGroup}>
-            <Text style={styles.brandTitle}>PJLaundry</Text>
-            <Text style={styles.brandSubtitle}>Solusi Laundry Modern</Text>
-          </View>
+          <BrandLogo size={34} subtitle="Solusi Laundry Modern" />
 
           {!isLastStep ? (
             <Pressable
@@ -125,7 +118,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: ONBOARDING_COLORS.background,
+    backgroundColor: COLORS.bgPrimary,
   },
   container: {
     flex: 1,
@@ -134,63 +127,54 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   header: {
-    minHeight: 56,
+    minHeight: 60,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingTop: 10,
+    paddingHorizontal: 20,
+    paddingTop: 8,
     paddingBottom: 6,
   },
-  brandGroup: {
-    justifyContent: "center",
-  },
-  brandTitle: {
-    color: ONBOARDING_COLORS.text,
-    fontSize: 19,
-    fontWeight: "700",
-  },
-  brandSubtitle: {
-    color: "#666666",
-    fontSize: 12,
-    marginTop: 2,
-  },
   skipTouchTarget: {
-    minWidth: 44,
-    minHeight: 44,
+    minWidth: TOUCH_TARGET.min,
+    minHeight: TOUCH_TARGET.min,
     justifyContent: "center",
     alignItems: "flex-end",
   },
   skipButtonSurface: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 18,
-    backgroundColor: ONBOARDING_COLORS.surface,
+    borderRadius: RADIUS.full,
+    backgroundColor: COLORS.surfacePrimary,
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.12)",
+    borderColor: COLORS.borderDefault,
     elevation: 1,
+    shadowColor: COLORS.textPrimary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
   skipText: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textSecondary,
     fontSize: 13,
     fontWeight: "600",
   },
   skipPlaceholder: {
-    width: 60,
+    width: TOUCH_TARGET.min,
   },
   scrollBody: {
     flexGrow: 1,
     justifyContent: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   footer: {
     width: "100%",
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 12,
     alignItems: "stretch",
   },
   pressed: {
-    opacity: 0.82,
+    opacity: 0.75,
   },
 });

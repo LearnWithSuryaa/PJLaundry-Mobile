@@ -1,9 +1,9 @@
 import { Check, Clock, Minus, Plus } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { ONBOARDING_COLORS } from "../../features/onboarding/onboardingData";
 import type { LaundryService } from "../../features/services/servicesData";
 import { formatRupiah } from "../../features/services/servicesData";
+import { COLORS, RADIUS, SHADOWS, TOUCH_TARGET } from "../../theme/tokens";
 
 type ServiceCardProps = {
   service: LaundryService;
@@ -27,376 +27,458 @@ export default function ServiceCard({
   const ServiceIcon = service.icon;
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${service.name}, ${formatRupiah(service.price)} per ${service.unit}, estimasi pengerjaan ${service.duration}`}
-      accessibilityState={{ selected: isSelected }}
-      onPress={() => onSelect(service)}
-      style={({ pressed }) => [styles.cardTouchTarget, pressed && styles.pressed]}
-    >
+    <View style={styles.cardContainer}>
       <View
-        style={[styles.cardSurface, isSelected && styles.cardSurfaceSelected]}
+        style={[
+          styles.cardSurface,
+          isSelected ? styles.cardSurfaceSelected : styles.cardSurfaceUnselected,
+        ]}
       >
-        {/* Header Row: Icon, Titles, Badges */}
-        <View
-          style={[
-            styles.cardHeaderRow,
-            isNarrow && styles.cardHeaderRowNarrow,
+        {/* Main Card Pressable */}
+        <Pressable
+          accessibilityRole="radio"
+          accessibilityLabel={`Paket layanan ${service.name}, harga ${formatRupiah(service.price)} per ${service.unit}`}
+          accessibilityState={{ selected: isSelected }}
+          onPress={() => onSelect(service)}
+          style={({ pressed }) => [
+            styles.cardMainPressable,
+            pressed && styles.pressed,
           ]}
         >
-          <View style={styles.cardHeaderLeft}>
+          {/* Card Body: 2 Columns (Icon Left, Main Content Right) */}
+          <View style={styles.cardBodyRow}>
+            {/* Left Column: Icon Tile (40x40) */}
             <View
               style={[
                 styles.serviceIconTile,
-                {
-                  backgroundColor: service.isExpress
-                    ? ONBOARDING_COLORS.peach
-                    : ONBOARDING_COLORS.lightBlue,
-                },
+                service.isExpress
+                  ? styles.iconTileExpress
+                  : isSelected
+                  ? styles.iconTileSelected
+                  : styles.iconTileDefault,
               ]}
             >
-              <ServiceIcon size={24} color={ONBOARDING_COLORS.text} />
+              <ServiceIcon
+                size={20}
+                color={
+                  service.isExpress
+                    ? COLORS.brandOrange
+                    : isSelected
+                    ? COLORS.brandBlueDark
+                    : COLORS.brandBlue
+                }
+                strokeWidth={2.2}
+              />
             </View>
-            <View style={styles.titleInfo}>
+
+            {/* Right Column: Full-width Content */}
+            <View style={styles.mainContent}>
+              {/* Service Name & Express Badge (Right padded for absolute radio) */}
               <View style={styles.nameRow}>
                 <Text style={styles.serviceName}>{service.name}</Text>
-                {service.isExpress ? (
+                {service.isExpress && (
                   <View style={styles.expressPill}>
-                    <Text style={styles.expressPillText}>Prioritas</Text>
+                    <Text style={styles.expressPillText}>Kilat 24J</Text>
                   </View>
-                ) : null}
+                )}
               </View>
+
+              {/* Price & Turnaround Duration Row */}
+              <View style={styles.priceMetaRow}>
+                <View style={styles.priceContainer}>
+                  <Text style={styles.priceNumber}>
+                    {formatRupiah(service.price)}
+                  </Text>
+                  <Text style={styles.priceUnit}>/{service.unit}</Text>
+                </View>
+
+                <View style={styles.metaDividerDot} />
+
+                <View style={styles.durationBadge}>
+                  <Clock size={11} color={COLORS.textSecondary} strokeWidth={2} />
+                  <Text style={styles.durationText}>{service.duration}</Text>
+                </View>
+              </View>
+
+              {/* Compact Service Tagline */}
               <Text style={styles.serviceTagline}>{service.tagline}</Text>
+
+              {/* Compact Features List */}
+              <View style={styles.featuresList}>
+                {service.features.map((feature, idx) => (
+                  <View key={idx} style={styles.featureItem}>
+                    <Check
+                      size={12}
+                      color={COLORS.success}
+                      strokeWidth={2.5}
+                      style={styles.featureCheckIcon}
+                    />
+                    <Text style={styles.featureText}>{feature}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
           </View>
 
-          <View style={styles.priceContainer}>
-            <Text style={styles.priceNumber}>
-              {formatRupiah(service.price)}
-            </Text>
-            <Text style={styles.priceUnit}>/ {service.unit}</Text>
-          </View>
-        </View>
-
-        {/* Features list */}
-        <View style={styles.featuresList}>
-          {service.features.map((feature, idx) => (
-            <View key={idx} style={styles.featureItem}>
-              <Check
-                size={14}
-                color="#2e7d32"
-                strokeWidth={2.5}
-                style={styles.featureIcon}
-              />
-              <Text style={styles.featureText}>{feature}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Meta row: duration & selection radio */}
-        <View style={styles.cardFooterRow}>
-          <View style={styles.durationPill}>
-            <Clock size={13} color="#444444" />
-            <Text style={styles.durationText}>
-              Selesai dalam {service.duration}
-            </Text>
-          </View>
-
+          {/* Absolute Radio Selection Indicator (Corner Overlay) */}
           <View
             style={[
               styles.radioIndicator,
-              isSelected && styles.radioIndicatorSelected,
+              isSelected
+                ? styles.radioIndicatorSelected
+                : styles.radioIndicatorUnselected,
             ]}
           >
-            {isSelected ? <View style={styles.radioIndicatorDot} /> : null}
+            {isSelected ? (
+              <Check size={12} color="#FFFFFF" strokeWidth={3} />
+            ) : null}
           </View>
-        </View>
+        </Pressable>
 
-        {/* Expanded Quantity Configurator if selected */}
-        {isSelected ? (
-          <View style={styles.quantitySection}>
-            <View style={styles.quantityHeader}>
-              <Text style={styles.quantityLabel}>
-                Atur Jumlah ({service.unit}):
+        {/* Balanced Selected Footer */}
+        {isSelected && (
+          <View style={styles.selectedFooter}>
+            <View style={styles.selectedPriceInfo}>
+              <Text style={styles.footerLabel}>
+                Subtotal · {quantity} {service.unit}
               </Text>
-              <Text style={styles.subtotalText}>
-                Subtotal: {formatRupiah(service.price * quantity)}
+              <Text style={styles.subtotalHighlight}>
+                {formatRupiah(service.price * quantity)}
               </Text>
+              {quantity >= service.maxOrder ? (
+                <Text style={styles.maxOrderHint}>
+                  Maksimal {service.maxOrder} {service.unit}
+                </Text>
+              ) : quantity === service.minOrder && service.minOrder > 1 ? (
+                <Text style={styles.minOrderHint}>
+                  Min. {service.minOrder} {service.unit}
+                </Text>
+              ) : null}
             </View>
 
-            <View style={styles.quantityControlRow}>
+            <View style={styles.stepperContainer}>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`Kurangi jumlah ${service.unit}`}
                 onPress={onDecreaseQuantity}
                 disabled={quantity <= service.minOrder}
                 style={({ pressed }) => [
-                  styles.qtyTouchTarget,
+                  styles.stepperTouchTarget,
                   pressed && styles.pressed,
                 ]}
               >
                 <View
                   style={[
-                    styles.qtyButtonSurface,
-                    quantity <= service.minOrder && styles.qtyButtonDisabled,
+                    styles.stepperButtonSurface,
+                    quantity <= service.minOrder && styles.stepperButtonDisabled,
                   ]}
                 >
-                  <Minus size={18} color={ONBOARDING_COLORS.text} />
+                  <Minus
+                    size={15}
+                    color={
+                      quantity <= service.minOrder
+                        ? COLORS.textDisabled
+                        : COLORS.textPrimary
+                    }
+                    strokeWidth={2.2}
+                  />
                 </View>
               </Pressable>
 
-              <View style={styles.qtyDisplay}>
-                <Text style={styles.qtyNumber}>{quantity}</Text>
-                <Text style={styles.qtyUnit}>{service.unit}</Text>
+              <View style={styles.stepperDisplay}>
+                <Text style={styles.stepperNumber}>{quantity}</Text>
+                <Text style={styles.stepperUnit}>{service.unit}</Text>
               </View>
 
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`Tambah jumlah ${service.unit}`}
                 onPress={onIncreaseQuantity}
+                disabled={quantity >= service.maxOrder}
                 style={({ pressed }) => [
-                  styles.qtyTouchTarget,
+                  styles.stepperTouchTarget,
                   pressed && styles.pressed,
                 ]}
               >
-                <View style={styles.qtyButtonSurface}>
-                  <Plus size={18} color={ONBOARDING_COLORS.text} />
+                <View
+                  style={[
+                    styles.stepperButtonSurface,
+                    quantity >= service.maxOrder && styles.stepperButtonDisabled,
+                  ]}
+                >
+                  <Plus
+                    size={15}
+                    color={
+                      quantity >= service.maxOrder
+                        ? COLORS.textDisabled
+                        : COLORS.brandBlueDark
+                    }
+                    strokeWidth={2.2}
+                  />
                 </View>
               </Pressable>
             </View>
-
-            {quantity === service.minOrder && service.minOrder > 1 ? (
-              <Text style={styles.minOrderHint}>
-                Minimal pemesanan paket ini adalah {service.minOrder}{" "}
-                {service.unit}.
-              </Text>
-            ) : null}
           </View>
-        ) : null}
+        )}
       </View>
-    </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  cardTouchTarget: {
+  cardContainer: {
     width: "100%",
   },
   cardSurface: {
-    backgroundColor: ONBOARDING_COLORS.surface,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 2,
-    borderColor: "rgba(51, 51, 51, 0.06)",
-    elevation: 2,
+    backgroundColor: COLORS.surfacePrimary,
+    borderRadius: RADIUS.card,
+    overflow: "hidden",
+  },
+  cardSurfaceUnselected: {
+    borderWidth: 1,
+    borderColor: COLORS.borderDefault,
+    ...SHADOWS.subtle,
   },
   cardSurfaceSelected: {
-    borderColor: ONBOARDING_COLORS.blue,
-    backgroundColor: "#ffffff",
+    borderWidth: 2,
+    borderColor: COLORS.brandBlue,
+    shadowColor: COLORS.brandBlueDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  cardHeaderRow: {
+  cardMainPressable: {
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 12,
+    width: "100%",
+    position: "relative",
+  },
+  cardBodyRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  cardHeaderRowNarrow: {
-    flexDirection: "column",
-  },
-  cardHeaderLeft: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 12,
+    gap: 10,
   },
   serviceIconTile: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.input,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
+    marginTop: 1,
   },
-  titleInfo: {
+  iconTileDefault: {
+    backgroundColor: COLORS.brandBlueSoft,
+  },
+  iconTileSelected: {
+    backgroundColor: COLORS.brandBlueSoft,
+  },
+  iconTileExpress: {
+    backgroundColor: COLORS.brandOrangeSoft,
+  },
+  mainContent: {
     flex: 1,
+    minWidth: 0,
   },
   nameRow: {
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
     gap: 6,
+    paddingRight: 28,
   },
   serviceName: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 16,
     fontWeight: "700",
-    lineHeight: 22,
+    lineHeight: 21,
+    letterSpacing: -0.2,
   },
   expressPill: {
-    backgroundColor: ONBOARDING_COLORS.peach,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
+    backgroundColor: COLORS.brandOrangeSoft,
+    paddingHorizontal: 7,
+    paddingVertical: 1.5,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+    borderColor: COLORS.brandOrange,
   },
   expressPillText: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textOnWarm,
     fontSize: 10,
     fontWeight: "700",
   },
-  serviceTagline: {
-    color: "#555555",
-    fontSize: 13,
-    lineHeight: 18,
-    marginTop: 4,
+  priceMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 3,
   },
   priceContainer: {
-    alignItems: "flex-end",
-    flexShrink: 0,
+    flexDirection: "row",
+    alignItems: "baseline",
   },
   priceNumber: {
-    color: ONBOARDING_COLORS.text,
-    fontSize: 16,
+    color: COLORS.brandBlueDark,
+    fontSize: 15,
     fontWeight: "700",
+    letterSpacing: -0.2,
   },
   priceUnit: {
-    color: "#666666",
+    color: COLORS.textSecondary,
     fontSize: 12,
-    marginTop: 2,
+    fontWeight: "500",
+  },
+  metaDividerDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: COLORS.textDisabled,
+  },
+  durationBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3.5,
+    backgroundColor: COLORS.surfaceSecondary,
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: RADIUS.full,
+  },
+  durationText: {
+    color: COLORS.textSecondary,
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  serviceTagline: {
+    color: COLORS.textSecondary,
+    fontSize: 12.5,
+    lineHeight: 17,
+    marginTop: 5,
   },
   featuresList: {
-    marginTop: 14,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(51, 51, 51, 0.06)",
-    gap: 6,
+    marginTop: 7,
+    gap: 4,
   },
   featureItem: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+    alignItems: "flex-start",
+    gap: 6,
   },
-  featureIcon: {
+  featureCheckIcon: {
+    marginTop: 2.5,
     flexShrink: 0,
   },
   featureText: {
-    color: "#444444",
-    fontSize: 12,
+    color: COLORS.textPrimary,
+    fontSize: 12.5,
     lineHeight: 17,
-  },
-  cardFooterRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 14,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(51, 51, 51, 0.06)",
-  },
-  durationPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: ONBOARDING_COLORS.background,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-  },
-  durationText: {
-    color: "#444444",
-    fontSize: 12,
-    fontWeight: "600",
+    flex: 1,
   },
   radioIndicator: {
+    position: "absolute",
+    top: 12,
+    right: 14,
     width: 22,
     height: 22,
     borderRadius: 11,
-    borderWidth: 2,
-    borderColor: "#cccccc",
     alignItems: "center",
     justifyContent: "center",
   },
+  radioIndicatorUnselected: {
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
+    backgroundColor: COLORS.surfacePrimary,
+  },
   radioIndicatorSelected: {
-    borderColor: ONBOARDING_COLORS.blue,
-    backgroundColor: ONBOARDING_COLORS.blue,
+    borderWidth: 0,
+    backgroundColor: COLORS.brandBlue,
   },
-  radioIndicatorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#ffffff",
-  },
-  quantitySection: {
-    marginTop: 14,
-    padding: 14,
-    backgroundColor: ONBOARDING_COLORS.background,
-    borderRadius: 12,
-  },
-  quantityHeader: {
+  selectedFooter: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: COLORS.brandBlueSoft,
+    borderTopWidth: 1,
+    borderTopColor: "#D6E9FA",
   },
-  quantityLabel: {
-    color: ONBOARDING_COLORS.text,
-    fontSize: 13,
-    fontWeight: "600",
+  selectedPriceInfo: {
+    flex: 1,
+    minWidth: 0,
+    marginRight: 8,
   },
-  subtotalText: {
-    color: ONBOARDING_COLORS.text,
-    fontSize: 13,
+  footerLabel: {
+    color: COLORS.textSecondary,
+    fontSize: 11,
+    fontWeight: "500",
+  },
+  subtotalHighlight: {
+    color: COLORS.brandBlueDark,
+    fontSize: 16,
     fontWeight: "700",
+    marginTop: 1,
   },
-  quantityControlRow: {
+  minOrderHint: {
+    color: COLORS.textSecondary,
+    fontSize: 10.5,
+    marginTop: 2,
+  },
+  maxOrderHint: {
+    color: COLORS.warning,
+    fontSize: 10.5,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+  stepperContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 16,
+    gap: 2,
   },
-  qtyTouchTarget: {
+  stepperTouchTarget: {
     minWidth: 44,
     minHeight: 44,
     alignItems: "center",
     justifyContent: "center",
   },
-  qtyButtonSurface: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: ONBOARDING_COLORS.surface,
+  stepperButtonSurface: {
+    width: 34,
+    height: 34,
+    borderRadius: 9,
+    backgroundColor: COLORS.surfacePrimary,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
-    elevation: 2,
+    borderColor: "#BFDBFE",
+    shadowColor: "#172033",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  qtyButtonDisabled: {
-    opacity: 0.4,
+  stepperButtonDisabled: {
+    opacity: 0.35,
   },
-  qtyDisplay: {
+  stepperDisplay: {
     flexDirection: "row",
     alignItems: "baseline",
-    gap: 4,
-    minWidth: 70,
+    gap: 2,
+    minWidth: 46,
     justifyContent: "center",
   },
-  qtyNumber: {
-    color: ONBOARDING_COLORS.text,
-    fontSize: 22,
+  stepperNumber: {
+    color: COLORS.textPrimary,
+    fontSize: 16,
     fontWeight: "700",
   },
-  qtyUnit: {
-    color: "#555555",
-    fontSize: 14,
+  stepperUnit: {
+    color: COLORS.textSecondary,
+    fontSize: 11.5,
     fontWeight: "600",
   },
-  minOrderHint: {
-    color: "#666666",
-    fontSize: 11,
-    textAlign: "center",
-    marginTop: 8,
-  },
   pressed: {
-    opacity: 0.82,
+    opacity: 0.8,
   },
 });

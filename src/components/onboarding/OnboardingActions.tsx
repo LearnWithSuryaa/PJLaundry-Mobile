@@ -1,7 +1,7 @@
 import { ArrowLeft } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { ONBOARDING_COLORS } from "../../features/onboarding/onboardingData";
+import { COLORS, RADIUS, TOUCH_TARGET } from "../../theme/tokens";
 
 type OnboardingActionsProps = {
   isFirstStep: boolean;
@@ -27,12 +27,19 @@ export default function OnboardingActions({
           onPress={onContinue}
           style={({ pressed }) => [
             styles.fullWidthTouch,
-            pressed && styles.pressed,
+            pressed && styles.primaryPressed,
           ]}
         >
-          <View style={styles.continueSurface}>
-            <Text style={styles.continueText}>{continueLabel}</Text>
-          </View>
+          {({ pressed }) => (
+            <View
+              style={[
+                styles.continueSurface,
+                pressed && styles.continueSurfacePressed,
+              ]}
+            >
+              <Text style={styles.continueText}>{continueLabel}</Text>
+            </View>
+          )}
         </Pressable>
       </View>
     );
@@ -40,7 +47,7 @@ export default function OnboardingActions({
 
   return (
     <View style={styles.dualButtonContainer}>
-      {/* Back button container with explicit dimensions */}
+      {/* Back button container */}
       <View style={styles.backButtonWrapper}>
         <Pressable
           accessibilityRole="button"
@@ -48,16 +55,23 @@ export default function OnboardingActions({
           onPress={onBack}
           style={({ pressed }) => [
             styles.fullSizeTouch,
-            pressed && styles.pressed,
+            pressed && styles.secondaryPressed,
           ]}
         >
-          <View style={styles.backButtonSurface}>
-            <ArrowLeft size={22} color={ONBOARDING_COLORS.text} />
-          </View>
+          {({ pressed }) => (
+            <View
+              style={[
+                styles.backButtonSurface,
+                pressed && styles.backButtonSurfacePressed,
+              ]}
+            >
+              <ArrowLeft size={22} color={COLORS.textPrimary} />
+            </View>
+          )}
         </Pressable>
       </View>
 
-      {/* Continue button wrapped in standard flex View to avoid Android NativeWind Pressable flex-shrink */}
+      {/* Primary Continue button */}
       <View style={styles.continueButtonWrapper}>
         <Pressable
           accessibilityRole="button"
@@ -69,12 +83,19 @@ export default function OnboardingActions({
           onPress={onContinue}
           style={({ pressed }) => [
             styles.fullSizeTouch,
-            pressed && styles.pressed,
+            pressed && styles.primaryPressed,
           ]}
         >
-          <View style={styles.continueSurface}>
-            <Text style={styles.continueText}>{continueLabel}</Text>
-          </View>
+          {({ pressed }) => (
+            <View
+              style={[
+                styles.continueSurface,
+                pressed && styles.continueSurfacePressed,
+              ]}
+            >
+              <Text style={styles.continueText}>{continueLabel}</Text>
+            </View>
+          )}
         </Pressable>
       </View>
     </View>
@@ -94,55 +115,71 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   backButtonWrapper: {
-    width: 56,
-    height: 56,
+    width: 52,
+    height: 52,
     flexShrink: 0,
   },
   continueButtonWrapper: {
     flex: 1,
-    minHeight: 56,
+    minHeight: 52,
     alignSelf: "stretch",
   },
   fullWidthTouch: {
     width: "100%",
-    minHeight: 56,
+    minHeight: 52,
     alignSelf: "stretch",
   },
   fullSizeTouch: {
     width: "100%",
     height: "100%",
-    minHeight: 56,
+    minHeight: TOUCH_TARGET.min,
     alignSelf: "stretch",
   },
   backButtonSurface: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: ONBOARDING_COLORS.surface,
+    width: 52,
+    height: 52,
+    borderRadius: RADIUS.button,
+    backgroundColor: COLORS.surfacePrimary,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.12)",
-    elevation: 2,
+    borderColor: COLORS.borderDefault,
+    shadowColor: COLORS.textPrimary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  backButtonSurfacePressed: {
+    backgroundColor: COLORS.surfaceSecondary,
   },
   continueSurface: {
     width: "100%",
-    height: 56,
+    height: 52,
     paddingHorizontal: 20,
-    borderRadius: 16,
-    backgroundColor: ONBOARDING_COLORS.blue,
+    borderRadius: RADIUS.button,
+    backgroundColor: COLORS.brandBlue,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
-    elevation: 3,
+    shadowColor: COLORS.brandBlueDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  continueSurfacePressed: {
+    backgroundColor: COLORS.brandBlueDark,
   },
   continueText: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textOnAccent,
     fontSize: 16,
     fontWeight: "700",
+    letterSpacing: -0.2,
   },
-  pressed: {
-    opacity: 0.82,
+  primaryPressed: {
+    opacity: 0.95,
+  },
+  secondaryPressed: {
+    opacity: 0.8,
   },
 });

@@ -5,6 +5,8 @@ import {
   type LucideIcon,
 } from "lucide-react-native";
 
+import { COLORS } from "../../theme/tokens";
+
 export type OnboardingVisualType = "pickup" | "tracking" | "care";
 
 export type OnboardingData = {
@@ -19,12 +21,17 @@ export type OnboardingData = {
 };
 
 export const ONBOARDING_COLORS = {
-  background: "#fff9d2",
-  surface: "#ffffff",
-  peach: "#ffebcc",
-  lightBlue: "#bfddf0",
-  blue: "#8cc0eb",
-  text: "#333333",
+  background: COLORS.bgPrimary,
+  surface: COLORS.surfacePrimary,
+  surfaceSecondary: COLORS.surfaceSecondary,
+  border: COLORS.borderDefault,
+  peach: COLORS.brandOrangeSoft,
+  lightBlue: COLORS.brandBlueSoft,
+  yellow: COLORS.brandYellow,
+  blue: COLORS.brandBlue,
+  blueDark: COLORS.brandBlueDark,
+  text: COLORS.textPrimary,
+  textSecondary: COLORS.textSecondary,
 } as const;
 
 export const ONBOARDING_STEPS: OnboardingData[] = [
@@ -35,7 +42,7 @@ export const ONBOARDING_STEPS: OnboardingData[] = [
     description:
       "Jadwalkan waktu penjemputan dari rumah atau kantor. Kurir PJLaundry siap mengambil cucian tepat waktu.",
     icon: Truck,
-    illustrationColor: ONBOARDING_COLORS.peach,
+    illustrationColor: COLORS.brandOrangeSoft,
     visualType: "pickup",
     badges: ["Gratis Ongkir Terdekat", "Jadwal Fleksibel", "Konfirmasi Cepat"],
   },
@@ -46,7 +53,7 @@ export const ONBOARDING_STEPS: OnboardingData[] = [
     description:
       "Ketahui setiap tahapan cucianmu langsung dari ponsel, mulai dari penimbangan berat hingga siap diantar kembali.",
     icon: MapPin,
-    illustrationColor: ONBOARDING_COLORS.lightBlue,
+    illustrationColor: COLORS.brandBlueSoft,
     visualType: "tracking",
     badges: ["Timbangan Akurat", "Update Berkala", "Riwayat Rapi"],
   },
@@ -57,7 +64,7 @@ export const ONBOARDING_STEPS: OnboardingData[] = [
     description:
       "Pakaian dicuci terpisah untuk setiap pelanggan dengan deterjen ramah serat kain dan setrika uap presisi.",
     icon: ShieldCheck,
-    illustrationColor: ONBOARDING_COLORS.peach,
+    illustrationColor: COLORS.brandBlueSoft,
     visualType: "care",
     badges: [
       "1 Mesin 1 Pelanggan",

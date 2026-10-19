@@ -11,7 +11,7 @@ import {
 import { StyleSheet, Text, View } from "react-native";
 
 import type { OnboardingData } from "../../features/onboarding/onboardingData";
-import { ONBOARDING_COLORS } from "../../features/onboarding/onboardingData";
+import { COLORS, RADIUS, SHADOWS } from "../../theme/tokens";
 
 type OnboardingStepProps = {
   step: OnboardingData;
@@ -30,7 +30,7 @@ export default function OnboardingStep({
             <View style={styles.previewHeaderRow}>
               <View style={styles.badgeRow}>
                 <View style={styles.courierIconCircle}>
-                  <Truck size={16} color={ONBOARDING_COLORS.text} />
+                  <Truck size={16} color={COLORS.brandBlueDark} />
                 </View>
                 <Text style={styles.courierTitle}>Kurir PJLaundry</Text>
               </View>
@@ -43,7 +43,7 @@ export default function OnboardingStep({
             <View style={styles.previewDivider} />
 
             <View style={styles.infoRow}>
-              <MapPin size={16} color="#666666" style={styles.infoIcon} />
+              <MapPin size={16} color={COLORS.textSecondary} style={styles.infoIcon} />
               <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>Alamat Jemput</Text>
                 <Text style={styles.infoValue}>
@@ -53,7 +53,7 @@ export default function OnboardingStep({
             </View>
 
             <View style={styles.infoRow}>
-              <Clock size={16} color="#666666" style={styles.infoIcon} />
+              <Clock size={16} color={COLORS.textSecondary} style={styles.infoIcon} />
               <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>Estimasi Kedatangan</Text>
                 <Text style={styles.infoValue}>Pagi, 09:30 WIB</Text>
@@ -83,7 +83,7 @@ export default function OnboardingStep({
 
             <View style={styles.timelineItem}>
               <View style={styles.timelineDotActive}>
-                <WashingMachine size={12} color={ONBOARDING_COLORS.text} />
+                <WashingMachine size={12} color="#ffffff" />
               </View>
               <View style={styles.timelineContent}>
                 <Text style={styles.timelineTitleActive}>
@@ -99,7 +99,7 @@ export default function OnboardingStep({
 
             <View style={styles.timelineItem}>
               <View style={styles.timelineDotPending}>
-                <PackageCheck size={12} color="#999999" />
+                <PackageCheck size={12} color={COLORS.textDisabled} />
               </View>
               <View style={styles.timelineContent}>
                 <Text style={styles.timelineTitlePending}>
@@ -118,7 +118,7 @@ export default function OnboardingStep({
           <View style={styles.previewCard}>
             <View style={styles.pillarItem}>
               <View style={styles.pillarIconCircle}>
-                <ShieldCheck size={18} color="#2e7d32" />
+                <ShieldCheck size={18} color={COLORS.success} />
               </View>
               <View style={styles.pillarTextGroup}>
                 <Text style={styles.pillarTitle}>1 Mesin 1 Pelanggan</Text>
@@ -132,10 +132,10 @@ export default function OnboardingStep({
 
             <View style={styles.pillarItem}>
               <View style={styles.pillarIconCircle}>
-                <Sparkles size={18} color="#0277bd" />
+                <Sparkles size={18} color={COLORS.brandBlue} />
               </View>
               <View style={styles.pillarTextGroup}>
-                <Text style={styles.pillarTitle}>Deterjen Hipoalergenik</Text>
+                <Text style={styles.pillarTitle}>Deterjen Ramah Serat</Text>
                 <Text style={styles.pillarSubtitle}>
                   Aman untuk kulit sensitif dan menjaga kelembutan serat kain
                 </Text>
@@ -146,13 +146,12 @@ export default function OnboardingStep({
 
             <View style={styles.pillarItem}>
               <View style={styles.pillarIconCircle}>
-                <Check size={18} color="#e65100" strokeWidth={2.5} />
+                <Check size={18} color={COLORS.brandOrange} strokeWidth={2.5} />
               </View>
               <View style={styles.pillarTextGroup}>
                 <Text style={styles.pillarTitle}>Garansi Cuci Ulang</Text>
                 <Text style={styles.pillarSubtitle}>
-                  Bila hasil kurang bersih atau wangi, kami cuci ulang tanpa
-                  biaya
+                  Jika kurang bersih atau kusut, kami cuci ulang tanpa biaya tambahan
                 </Text>
               </View>
             </View>
@@ -210,27 +209,27 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 380,
     height: 240,
-    borderRadius: 20,
+    borderRadius: RADIUS.card,
     padding: 16,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
+    borderColor: COLORS.borderDefault,
   },
   compactIllustrationBackdrop: {
-    height: 190,
+    height: 195,
     marginBottom: 14,
     padding: 12,
   },
   previewCard: {
     width: "100%",
-    backgroundColor: ONBOARDING_COLORS.surface,
-    borderRadius: 14,
+    backgroundColor: COLORS.surfacePrimary,
+    borderRadius: RADIUS.button,
     padding: 14,
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
-    elevation: 3,
+    borderColor: COLORS.borderDefault,
+    ...SHADOWS.subtle,
   },
   previewHeaderRow: {
     flexDirection: "row",
@@ -246,12 +245,12 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 8,
-    backgroundColor: ONBOARDING_COLORS.peach,
+    backgroundColor: COLORS.brandBlueSoft,
     alignItems: "center",
     justifyContent: "center",
   },
   courierTitle: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 13,
     fontWeight: "700",
   },
@@ -259,25 +258,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: "#e8f5e9",
+    backgroundColor: COLORS.successSurface,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: RADIUS.full,
   },
   liveDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: "#2e7d32",
+    backgroundColor: COLORS.success,
   },
   statusPillText: {
-    color: "#2e7d32",
+    color: COLORS.success,
     fontSize: 11,
     fontWeight: "600",
   },
   previewDivider: {
     height: 1,
-    backgroundColor: "rgba(51, 51, 51, 0.06)",
+    backgroundColor: COLORS.borderDefault,
     marginVertical: 10,
   },
   infoRow: {
@@ -293,11 +292,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   infoLabel: {
-    color: "#777777",
+    color: COLORS.textSecondary,
     fontSize: 11,
   },
   infoValue: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 13,
     fontWeight: "600",
     marginTop: 1,
@@ -316,20 +315,20 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: "#2e7d32",
+    backgroundColor: COLORS.success,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 1,
   },
   timelineTitleDone: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 13,
     fontWeight: "600",
   },
   timelineConnectorDone: {
     width: 2,
     height: 12,
-    backgroundColor: "#2e7d32",
+    backgroundColor: COLORS.success,
     marginLeft: 9,
     marginVertical: 2,
   },
@@ -337,20 +336,20 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: ONBOARDING_COLORS.blue,
+    backgroundColor: COLORS.brandBlue,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 1,
   },
   timelineTitleActive: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 13,
     fontWeight: "700",
   },
   timelineConnectorPending: {
     width: 2,
     height: 12,
-    backgroundColor: "#dddddd",
+    backgroundColor: COLORS.borderDefault,
     marginLeft: 9,
     marginVertical: 2,
   },
@@ -358,18 +357,18 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: COLORS.surfaceSecondary,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 1,
   },
   timelineTitlePending: {
-    color: "#888888",
+    color: COLORS.textDisabled,
     fontSize: 13,
     fontWeight: "500",
   },
   timelineSubtitle: {
-    color: "#666666",
+    color: COLORS.textSecondary,
     fontSize: 11,
     marginTop: 2,
   },
@@ -383,8 +382,8 @@ const styles = StyleSheet.create({
   pillarIconCircle: {
     width: 32,
     height: 32,
-    borderRadius: 10,
-    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    backgroundColor: COLORS.surfaceSecondary,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -393,12 +392,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pillarTitle: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 13,
     fontWeight: "700",
   },
   pillarSubtitle: {
-    color: "#666666",
+    color: COLORS.textSecondary,
     fontSize: 11,
     lineHeight: 16,
     marginTop: 2,
@@ -406,26 +405,25 @@ const styles = StyleSheet.create({
 
   // Typography & Tags
   tagPill: {
-    backgroundColor: ONBOARDING_COLORS.surface,
+    backgroundColor: COLORS.brandBlueSoft,
     paddingHorizontal: 12,
     paddingVertical: 5,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.1)",
+    borderRadius: RADIUS.full,
     marginBottom: 10,
   },
   tagText: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.brandBlueDark,
     fontSize: 12,
     fontWeight: "700",
   },
   title: {
     maxWidth: 380,
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 24,
     lineHeight: 32,
     fontWeight: "700",
     textAlign: "center",
+    letterSpacing: -0.3,
   },
   compactTitle: {
     fontSize: 20,
@@ -433,7 +431,7 @@ const styles = StyleSheet.create({
   },
   description: {
     maxWidth: 360,
-    color: "#555555",
+    color: COLORS.textSecondary,
     fontSize: 14,
     lineHeight: 22,
     textAlign: "center",
@@ -452,15 +450,15 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   badgeChip: {
-    backgroundColor: ONBOARDING_COLORS.surface,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 10,
+    backgroundColor: COLORS.surfacePrimary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: RADIUS.full,
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
+    borderColor: COLORS.borderDefault,
   },
   badgeText: {
-    color: "#555555",
+    color: COLORS.textSecondary,
     fontSize: 11,
     fontWeight: "600",
   },

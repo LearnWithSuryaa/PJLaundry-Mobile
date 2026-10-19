@@ -1,9 +1,9 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ONBOARDING_COLORS } from "../../features/onboarding/onboardingData";
 import type { LaundryService } from "../../features/services/servicesData";
 import { formatRupiah } from "../../features/services/servicesData";
+import { COLORS, RADIUS, SHADOWS, TOUCH_TARGET } from "../../theme/tokens";
 
 type ServiceBottomBarProps = {
   selectedService: LaundryService;
@@ -46,9 +46,16 @@ export default function ServiceBottomBar({
             pressed && styles.pressed,
           ]}
         >
-          <View style={styles.orderButtonSurface}>
-            <Text style={styles.orderButtonText}>Lanjut Pemesanan</Text>
-          </View>
+          {({ pressed }) => (
+            <View
+              style={[
+                styles.orderButtonSurface,
+                pressed && styles.orderButtonSurfacePressed,
+              ]}
+            >
+              <Text style={styles.orderButtonText}>Lanjut Pemesanan</Text>
+            </View>
+          )}
         </Pressable>
       </View>
     </View>
@@ -61,12 +68,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: ONBOARDING_COLORS.surface,
+    backgroundColor: COLORS.surfacePrimary,
     borderTopWidth: 1,
-    borderTopColor: "rgba(51, 51, 51, 0.12)",
+    borderTopColor: COLORS.borderDefault,
     paddingTop: 12,
     paddingHorizontal: 20,
-    elevation: 8,
+    ...SHADOWS.card,
   },
   bottomBarContent: {
     flexDirection: "row",
@@ -81,36 +88,43 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   summaryCaption: {
-    color: "#666666",
+    color: COLORS.textSecondary,
     fontSize: 12,
+    fontWeight: "500",
   },
   summaryTotal: {
-    color: ONBOARDING_COLORS.text,
-    fontSize: 18,
+    color: COLORS.brandBlueDark,
+    fontSize: 20,
     fontWeight: "700",
     marginTop: 2,
+    letterSpacing: -0.3,
   },
   orderButtonTouch: {
-    minHeight: 48,
+    minHeight: TOUCH_TARGET.min,
     justifyContent: "center",
   },
   orderButtonSurface: {
-    minHeight: 48,
+    minHeight: TOUCH_TARGET.min,
     paddingHorizontal: 22,
-    backgroundColor: ONBOARDING_COLORS.blue,
-    borderRadius: 14,
+    backgroundColor: COLORS.brandBlue,
+    borderRadius: RADIUS.button,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
+    shadowColor: COLORS.brandBlueDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
     elevation: 3,
   },
+  orderButtonSurfacePressed: {
+    backgroundColor: COLORS.brandBlueDark,
+  },
   orderButtonText: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textOnAccent,
     fontSize: 15,
     fontWeight: "700",
   },
   pressed: {
-    opacity: 0.82,
+    opacity: 0.85,
   },
 });

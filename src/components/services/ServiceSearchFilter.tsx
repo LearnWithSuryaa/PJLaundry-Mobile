@@ -1,9 +1,16 @@
 import { Clock, Search, ShieldCheck, X } from "lucide-react-native";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
-import { ONBOARDING_COLORS } from "../../features/onboarding/onboardingData";
 import type { ServiceCategory } from "../../features/services/servicesData";
 import { CATEGORIES, SERVICES } from "../../features/services/servicesData";
+import { COLORS, RADIUS, SHADOWS, TOUCH_TARGET } from "../../theme/tokens";
 
 type ServiceSearchFilterProps = {
   searchQuery: string;
@@ -20,7 +27,7 @@ export default function ServiceSearchFilter({
 }: ServiceSearchFilterProps) {
   return (
     <View style={styles.container}>
-      {/* Hero Context Banner */}
+      {/* Hero Context Banner with Brand Accent */}
       <View style={styles.heroCard}>
         <View style={styles.heroTextGroup}>
           <Text style={styles.heroTitle}>Pilihan Perawatan Cucian</Text>
@@ -29,26 +36,27 @@ export default function ServiceSearchFilter({
             siap menjemput langsung ke alamatmu.
           </Text>
         </View>
+
         <View style={styles.guaranteeRow}>
           <View style={styles.guaranteeItem}>
-            <ShieldCheck size={16} color={ONBOARDING_COLORS.text} />
-            <Text style={styles.guaranteeText}>Garansi Bersih</Text>
+            <ShieldCheck size={16} color={COLORS.brandBlue} />
+            <Text style={styles.guaranteeText}>Garansi Bersih & Higienis</Text>
           </View>
           <View style={styles.guaranteeDot} />
           <View style={styles.guaranteeItem}>
-            <Clock size={16} color={ONBOARDING_COLORS.text} />
-            <Text style={styles.guaranteeText}>Tepat Waktu</Text>
+            <Clock size={16} color={COLORS.brandOrange} />
+            <Text style={styles.guaranteeText}>Antar Jemput Terjadwal</Text>
           </View>
         </View>
       </View>
 
-      {/* Search Input Bar */}
+      {/* Search Input Bar (Input Radius 12px, Min Height 48dp) */}
       <View style={styles.searchWrapper}>
-        <Search size={18} color="#666666" style={styles.searchIcon} />
+        <Search size={18} color={COLORS.textSecondary} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Cari layanan (misal: kemeja, kiloan, sepatu)..."
-          placeholderTextColor="#777777"
+          placeholder="Cari layanan (misal: kemeja, kiloan, bedcover)..."
+          placeholderTextColor={COLORS.textDisabled}
           value={searchQuery}
           onChangeText={onSearchChange}
           accessibilityLabel="Cari paket layanan laundry"
@@ -64,13 +72,13 @@ export default function ServiceSearchFilter({
             ]}
           >
             <View style={styles.clearButtonSurface}>
-              <X size={16} color="#666666" />
+              <X size={14} color={COLORS.textSecondary} />
             </View>
           </Pressable>
         ) : null}
       </View>
 
-      {/* Category Filter Chips */}
+      {/* Category Filter Chips with Brand Blue Active State */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -98,13 +106,17 @@ export default function ServiceSearchFilter({
               <View
                 style={[
                   styles.categoryChipSurface,
-                  isActive && styles.categoryChipSurfaceActive,
+                  isActive
+                    ? styles.categoryChipSurfaceActive
+                    : styles.categoryChipSurfaceInactive,
                 ]}
               >
                 <Text
                   style={[
                     styles.categoryChipText,
-                    isActive && styles.categoryChipTextActive,
+                    isActive
+                      ? styles.categoryChipTextActive
+                      : styles.categoryChipTextInactive,
                   ]}
                 >
                   {cat.label} ({count})
@@ -123,24 +135,25 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   heroCard: {
-    backgroundColor: ONBOARDING_COLORS.surface,
-    borderRadius: 16,
+    backgroundColor: COLORS.surfacePrimary,
+    borderRadius: RADIUS.card,
     padding: 18,
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.06)",
-    elevation: 2,
+    borderColor: COLORS.borderDefault,
+    ...SHADOWS.subtle,
   },
   heroTextGroup: {
     marginBottom: 14,
   },
   heroTitle: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 20,
     fontWeight: "700",
     lineHeight: 26,
+    letterSpacing: -0.3,
   },
   heroDescription: {
-    color: "#4a4a4a",
+    color: COLORS.textSecondary,
     fontSize: 14,
     lineHeight: 21,
     marginTop: 6,
@@ -150,7 +163,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "rgba(51, 51, 51, 0.08)",
+    borderTopColor: COLORS.borderDefault,
     gap: 10,
   },
   guaranteeItem: {
@@ -162,45 +175,45 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#888888",
+    backgroundColor: COLORS.borderDefault,
   },
   guaranteeText: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 12,
     fontWeight: "600",
   },
   searchWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: ONBOARDING_COLORS.surface,
-    borderRadius: 12,
+    backgroundColor: COLORS.surfacePrimary,
+    borderRadius: RADIUS.input,
     marginTop: 16,
-    paddingHorizontal: 12,
-    minHeight: 48,
+    paddingHorizontal: 14,
+    minHeight: TOUCH_TARGET.min,
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
-    elevation: 1,
+    borderColor: COLORS.borderDefault,
+    ...SHADOWS.subtle,
   },
   searchIcon: {
     marginRight: 8,
   },
   searchInput: {
     flex: 1,
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 14,
     paddingVertical: 10,
   },
   clearButtonTouchTarget: {
-    width: 36,
-    height: 36,
+    minWidth: TOUCH_TARGET.min,
+    minHeight: TOUCH_TARGET.min,
     alignItems: "center",
     justifyContent: "center",
   },
   clearButtonSurface: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#eeeeee",
+    width: 24,
+    height: 24,
+    borderRadius: RADIUS.full,
+    backgroundColor: COLORS.surfaceSecondary,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -210,34 +223,43 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   categoryChipTouch: {
-    minHeight: 44,
+    minHeight: TOUCH_TARGET.min,
     justifyContent: "center",
   },
   categoryChipSurface: {
-    minHeight: 40,
+    minHeight: 38,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: ONBOARDING_COLORS.surface,
+    borderRadius: RADIUS.full,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.12)",
-    elevation: 1,
   },
   categoryChipSurfaceActive: {
-    backgroundColor: ONBOARDING_COLORS.text,
-    borderColor: ONBOARDING_COLORS.text,
+    backgroundColor: COLORS.brandBlue,
+    borderWidth: 1,
+    borderColor: COLORS.brandBlue,
+    shadowColor: COLORS.brandBlueDark,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  categoryChipSurfaceInactive: {
+    backgroundColor: COLORS.surfacePrimary,
+    borderWidth: 1,
+    borderColor: COLORS.borderDefault,
   },
   categoryChipText: {
-    color: ONBOARDING_COLORS.text,
     fontSize: 13,
     fontWeight: "600",
   },
   categoryChipTextActive: {
-    color: "#ffffff",
+    color: COLORS.textOnAccent,
+  },
+  categoryChipTextInactive: {
+    color: COLORS.textSecondary,
   },
   pressed: {
-    opacity: 0.82,
+    opacity: 0.8,
   },
 });

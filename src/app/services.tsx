@@ -16,7 +16,6 @@ import ServiceBottomBar from "../components/services/ServiceBottomBar";
 import ServiceCard from "../components/services/ServiceCard";
 import ServiceHeader from "../components/services/ServiceHeader";
 import ServiceSearchFilter from "../components/services/ServiceSearchFilter";
-import { ONBOARDING_COLORS } from "../features/onboarding/onboardingData";
 import type {
   LaundryService,
   ServiceCategory,
@@ -25,6 +24,7 @@ import {
   getUpcomingPickupDates,
   SERVICES,
 } from "../features/services/servicesData";
+import { COLORS, RADIUS, SHADOWS, SPACING, TOUCH_TARGET } from "../theme/tokens";
 
 export default function ServicesScreen() {
   const insets = useSafeAreaInsets();
@@ -84,7 +84,8 @@ export default function ServicesScreen() {
   };
 
   const handleIncreaseQuantity = () => {
-    setQuantity((prev) => prev + 1);
+    if (!selectedService) return;
+    setQuantity((prev) => Math.min(selectedService.maxOrder, prev + 1));
   };
 
   const estimatedTotal = selectedService
@@ -96,7 +97,7 @@ export default function ServicesScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar
         barStyle="dark-content"
-        backgroundColor={ONBOARDING_COLORS.background}
+        backgroundColor={COLORS.surfacePrimary}
       />
 
       <View style={styles.container}>
@@ -188,7 +189,7 @@ export default function ServicesScreen() {
         orderNotes={orderNotes}
         onNotesChange={setOrderNotes}
         orderConfirmed={orderConfirmed}
-        onConfirmOrder={() => setOrderConfirmed(true)}
+        onConfirmOrder={(_orderNum) => setOrderConfirmed(true)}
         onClose={() => {
           setIsModalVisible(false);
           setOrderConfirmed(false);
@@ -201,7 +202,7 @@ export default function ServicesScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: ONBOARDING_COLORS.background,
+    backgroundColor: COLORS.bgPrimary,
   },
   container: {
     flex: 1,
@@ -214,26 +215,26 @@ const styles = StyleSheet.create({
     paddingTop: 18,
   },
   servicesList: {
-    gap: 16,
-    marginTop: 4,
+    gap: SPACING.md,
+    marginTop: 8,
   },
   emptyState: {
-    backgroundColor: ONBOARDING_COLORS.surface,
-    borderRadius: 16,
+    backgroundColor: COLORS.surfacePrimary,
+    borderRadius: RADIUS.card,
     padding: 24,
     alignItems: "center",
     marginTop: 12,
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
-    elevation: 2,
+    borderColor: COLORS.borderDefault,
+    ...SHADOWS.subtle,
   },
   emptyTitle: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 16,
     fontWeight: "700",
   },
   emptySubtitle: {
-    color: "#666666",
+    color: COLORS.textSecondary,
     fontSize: 13,
     lineHeight: 19,
     textAlign: "center",
@@ -241,22 +242,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   resetButtonTouch: {
-    minHeight: 44,
-  },
-  resetButtonSurface: {
-    minHeight: 44,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    backgroundColor: ONBOARDING_COLORS.lightBlue,
-    alignItems: "center",
+    minHeight: TOUCH_TARGET.min,
     justifyContent: "center",
   },
+  resetButtonSurface: {
+    minHeight: TOUCH_TARGET.min,
+    paddingHorizontal: 20,
+    borderRadius: RADIUS.button,
+    backgroundColor: COLORS.brandBlueSoft,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: COLORS.brandBlueSoft,
+  },
   resetButtonText: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.brandBlueDark,
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   pressed: {
-    opacity: 0.82,
+    opacity: 0.8,
   },
 });

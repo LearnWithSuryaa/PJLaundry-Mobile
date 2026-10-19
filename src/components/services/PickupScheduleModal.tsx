@@ -1,5 +1,15 @@
-import { Calendar, Check, Clock, MapPin, X } from "lucide-react-native";
 import {
+  AlertTriangle,
+  Calendar,
+  Check,
+  Clock,
+  Info,
+  MapPin,
+  X,
+} from "lucide-react-native";
+import { useMemo, useState } from "react";
+import {
+  ActivityIndicator,
   Modal,
   Pressable,
   ScrollView,
@@ -10,15 +20,17 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ONBOARDING_COLORS } from "../../features/onboarding/onboardingData";
 import type {
   LaundryService,
   PickupDateOption,
 } from "../../features/services/servicesData";
 import {
   formatRupiah,
+  generateDemoOrderNumber,
+  isSlotAvailable,
   PICKUP_TIME_SLOTS,
 } from "../../features/services/servicesData";
+import { COLORS, RADIUS, SHADOWS, TOUCH_TARGET } from "../../theme/tokens";
 
 type PickupScheduleModalProps = {
   visible: boolean;
@@ -35,7 +47,7 @@ type PickupScheduleModalProps = {
   orderNotes: string;
   onNotesChange: (notes: string) => void;
   orderConfirmed: boolean;
-  onConfirmOrder: () => void;
+  onConfirmOrder: (orderNumber: string) => void;
   onClose: () => void;
 };
 
@@ -59,23 +71,81 @@ export default function PickupScheduleModal({
 }: PickupScheduleModalProps) {
   const insets = useSafeAreaInsets();
 
-  const selectedDate =
-    pickupDates.find((d) => d.id === selectedDateId) ?? pickupDates[0];
-  const selectedSlot =
-    PICKUP_TIME_SLOTS.find((s) => s.id === selectedSlotId) ??
-    PICKUP_TIME_SLOTS[0];
+  // Internal state for validation, loading, and demo order id
+  const [addressError, setAddressError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentDemoOrderNumber, setCurrentDemoOrderNumber] = useState<string>("DEMO-PJL-20261018-8821");
+
+  const selectedDate = useMemo(
+    () => pickupDates.find((d) => d.id === selectedDateId) ?? pickupDates[0],
+    [pickupDates, selectedDateId]
+  );
+
+  const selectedSlot = useMemo(
+    () =>
+      PICKUP_TIME_SLOTS.find((s) => s.id === selectedSlotId) ??
+      PICKUP_TIME_SLOTS[0],
+    [selectedSlotId]
+  );
+
+  const handleSelectDate = (dateId: string) => {
+    onSelectDate(dateId);
+    const isCurrentSlotValid = isSlotAvailable(selectedSlot, dateId);
+    if (!isCurrentSlotValid) {
+      const firstAvailable = PICKUP_TIME_SLOTS.find((s) =>
+        isSlotAvailable(s, dateId)
+      );
+      if (firstAvailable) {
+        onSelectSlot(firstAvailable.id);
+      }
+    }
+  };
+
+  const handleClose = () => {
+    setAddressError(null);
+    setIsSubmitting(false);
+    onClose();
+  };
+
+  const handleAddressTextChange = (text: string) => {
+    onAddressChange(text);
+    if (addressError && text.trim().length >= 10) {
+      setAddressError(null);
+    }
+  };
+
+  const handleAttemptConfirm = () => {
+    const trimmed = pickupAddress.trim();
+    if (trimmed.length < 10) {
+      setAddressError(
+        "Alamat penjemputan wajib diisi lengkap (minimal 10 karakter jalan/nomor rumah)."
+      );
+      return;
+    }
+
+    const orderNumber = generateDemoOrderNumber();
+    setCurrentDemoOrderNumber(orderNumber);
+    setAddressError(null);
+    setIsSubmitting(true);
+
+    // Simulate 500ms network verification before updating to success state
+    setTimeout(() => {
+      setIsSubmitting(false);
+      onConfirmOrder(orderNumber);
+    }, 500);
+  };
 
   return (
     <Modal
       visible={visible}
       animationType="slide"
       transparent
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <View style={styles.modalBackdrop}>
         <Pressable
           style={styles.modalOverlayDismiss}
-          onPress={onClose}
+          onPress={handleClose}
           accessibilityLabel="Tutup jendela pemesanan"
         />
         <View
@@ -103,19 +173,19 @@ export default function PickupScheduleModal({
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Tutup dialog"
-                  onPress={onClose}
+                  onPress={handleClose}
                   style={({ pressed }) => [
-                    styles.touchTarget44,
+                    styles.touchTarget,
                     pressed && styles.pressed,
                   ]}
                 >
                   <View style={styles.modalCloseButtonSurface}>
-                    <X size={20} color={ONBOARDING_COLORS.text} />
+                    <X size={18} color={COLORS.textPrimary} />
                   </View>
                 </Pressable>
               </View>
 
-              {/* Service Summary Card */}
+              {/* Service Summary Card with Price Breakdown */}
               {selectedService ? (
                 <View style={styles.modalOrderSummaryCard}>
                   <View style={styles.modalServiceRow}>
@@ -127,31 +197,48 @@ export default function PickupScheduleModal({
                     </Text>
                   </View>
                   <Text style={styles.modalServiceDetail}>
-                    Jumlah: {quantity} {selectedService.unit} · Pengerjaan:{" "}
+                    Beban: {quantity} {selectedService.unit} · Pengerjaan:{" "}
                     {selectedService.duration}
                   </Text>
+                  <View style={styles.feeBreakdownRow}>
+                    <Text style={styles.feeBreakdownLabel}>
+                      Ongkir Antar-Jemput:
+                    </Text>
+                    <Text style={styles.feeBreakdownValue}>
+                      Gratis (Radius Terdekat)
+                    </Text>
+                  </View>
                 </View>
               ) : null}
 
-              {/* Pickup Address Field */}
+              {/* Pickup Address Field with Validation */}
               <View style={styles.formGroup}>
                 <View style={styles.formLabelRow}>
-                  <MapPin size={16} color={ONBOARDING_COLORS.text} />
-                  <Text style={styles.formLabel}>Alamat Penjemputan</Text>
+                  <MapPin size={16} color={COLORS.brandBlue} />
+                  <Text style={styles.formLabel}>Alamat Penjemputan *</Text>
                 </View>
                 <TextInput
-                  style={styles.formTextInput}
+                  style={[
+                    styles.formTextInput,
+                    addressError ? styles.formTextInputError : null,
+                  ]}
                   value={pickupAddress}
-                  onChangeText={onAddressChange}
-                  placeholder="Masukkan alamat lengkap rumah atau kantor"
-                  placeholderTextColor="#888888"
+                  onChangeText={handleAddressTextChange}
+                  placeholder="Masukkan alamat lengkap rumah, kantor, atau nomor kamar"
+                  placeholderTextColor={COLORS.textDisabled}
                 />
+                {addressError ? (
+                  <View style={styles.errorRow}>
+                    <AlertTriangle size={14} color={COLORS.error} />
+                    <Text style={styles.errorText}>{addressError}</Text>
+                  </View>
+                ) : null}
               </View>
 
               {/* Date Selection: Level 1 */}
               <View style={styles.formGroup}>
                 <View style={styles.formLabelRow}>
-                  <Calendar size={16} color={ONBOARDING_COLORS.text} />
+                  <Calendar size={16} color={COLORS.brandBlue} />
                   <Text style={styles.formLabel}>
                     1. Pilih Tanggal Penjemputan
                   </Text>
@@ -165,7 +252,7 @@ export default function PickupScheduleModal({
                         accessibilityRole="button"
                         accessibilityLabel={`Pilih tanggal ${item.fullDescription}`}
                         accessibilityState={{ selected: isDateActive }}
-                        onPress={() => onSelectDate(item.id)}
+                        onPress={() => handleSelectDate(item.id)}
                         style={({ pressed }) => [
                           styles.dateChipTouch,
                           pressed && styles.pressed,
@@ -174,7 +261,9 @@ export default function PickupScheduleModal({
                         <View
                           style={[
                             styles.dateChipSurface,
-                            isDateActive && styles.dateChipSurfaceActive,
+                            isDateActive
+                              ? styles.dateChipSurfaceActive
+                              : styles.dateChipSurfaceInactive,
                           ]}
                         >
                           <Text
@@ -200,10 +289,10 @@ export default function PickupScheduleModal({
                 </View>
               </View>
 
-              {/* Time Slot Selection: Level 2 */}
+              {/* Time Slot Selection: Level 2 with Availability Logic */}
               <View style={styles.formGroup}>
                 <View style={styles.formLabelRow}>
-                  <Clock size={16} color={ONBOARDING_COLORS.text} />
+                  <Clock size={16} color={COLORS.brandBlue} />
                   <Text style={styles.formLabel}>
                     2. Pilih Jam Kedatangan Kurir
                   </Text>
@@ -212,36 +301,48 @@ export default function PickupScheduleModal({
                 <View style={styles.timeSlotCardsContainer}>
                   {PICKUP_TIME_SLOTS.map((slot) => {
                     const isSlotActive = selectedSlotId === slot.id;
+                    const available = isSlotAvailable(slot, selectedDateId);
+
                     return (
                       <Pressable
                         key={slot.id}
                         accessibilityRole="button"
-                        accessibilityLabel={`${slot.slotName}, jam ${slot.hours}, ${slot.note}`}
-                        accessibilityState={{ selected: isSlotActive }}
+                        accessibilityLabel={`${slot.slotName}, jam ${slot.hours}, status ${available ? "tersedia" : "penuh"}`}
+                        accessibilityState={{
+                          selected: isSlotActive,
+                          disabled: !available,
+                        }}
+                        disabled={!available}
                         onPress={() => onSelectSlot(slot.id)}
                         style={({ pressed }) => [
                           styles.timeSlotTouchTarget,
-                          pressed && styles.pressed,
+                          !available && styles.timeSlotDisabled,
+                          pressed && available && styles.pressed,
                         ]}
                       >
                         <View
                           style={[
                             styles.timeSlotCardSurface,
-                            isSlotActive && styles.timeSlotCardSurfaceActive,
+                            isSlotActive
+                              ? styles.timeSlotCardSurfaceActive
+                              : styles.timeSlotCardSurfaceInactive,
+                            !available && styles.timeSlotSurfaceDisabled,
                           ]}
                         >
                           <View
                             style={[
                               styles.timeSlotIconCircle,
-                              isSlotActive && styles.timeSlotIconCircleActive,
+                              isSlotActive
+                                ? styles.timeSlotIconCircleActive
+                                : styles.timeSlotIconCircleInactive,
                             ]}
                           >
                             <Clock
                               size={18}
                               color={
                                 isSlotActive
-                                  ? ONBOARDING_COLORS.text
-                                  : "#666666"
+                                  ? COLORS.brandBlue
+                                  : COLORS.textSecondary
                               }
                             />
                           </View>
@@ -252,13 +353,35 @@ export default function PickupScheduleModal({
                                 style={[
                                   styles.timeSlotTitle,
                                   isSlotActive && styles.timeSlotTitleActive,
+                                  !available && styles.timeSlotTitleDisabled,
                                 ]}
                               >
                                 {slot.slotName}
                               </Text>
-                              <Text style={styles.timeSlotHours}>
-                                {slot.hours}
-                              </Text>
+                              <View style={styles.slotBadgeRow}>
+                                <Text style={styles.timeSlotHours}>
+                                  {slot.hours}
+                                </Text>
+                                <View
+                                  style={[
+                                    styles.slotAvailabilityBadge,
+                                    available
+                                      ? styles.slotBadgeAvailable
+                                      : styles.slotBadgeFull,
+                                  ]}
+                                >
+                                  <Text
+                                    style={[
+                                      styles.slotBadgeText,
+                                      available
+                                        ? styles.slotBadgeTextAvailable
+                                        : styles.slotBadgeTextFull,
+                                    ]}
+                                  >
+                                    {available ? "Tersedia" : "Penuh"}
+                                  </Text>
+                                </View>
+                              </View>
                             </View>
                             <Text style={styles.timeSlotNote}>{slot.note}</Text>
                           </View>
@@ -267,6 +390,7 @@ export default function PickupScheduleModal({
                             style={[
                               styles.radioIndicator,
                               isSlotActive && styles.radioIndicatorSelected,
+                              !available && styles.radioIndicatorDisabled,
                             ]}
                           >
                             {isSlotActive ? (
@@ -298,76 +422,121 @@ export default function PickupScheduleModal({
                   style={[styles.formTextInput, styles.formTextArea]}
                   value={orderNotes}
                   onChangeText={onNotesChange}
-                  placeholder="Contoh: Pisahkan pakaian putih, hubungi saat tiba di depan pagar."
-                  placeholderTextColor="#888888"
+                  placeholder="Contoh: Pisahkan kemeja putih, hubungi jika tiba di depan pagar."
+                  placeholderTextColor={COLORS.textDisabled}
                   multiline
                   numberOfLines={3}
                 />
               </View>
 
-              {/* Submit Button */}
+              {/* Submit Button with Double-Submit Prevention */}
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Konfirmasi dan jadwalkan penjemputan sekarang"
-                onPress={onConfirmOrder}
+                disabled={isSubmitting}
+                onPress={handleAttemptConfirm}
                 style={({ pressed }) => [
                   styles.confirmButtonTouch,
-                  pressed && styles.pressed,
+                  pressed && !isSubmitting && styles.pressed,
                 ]}
               >
-                <View style={styles.confirmButtonSurface}>
-                  <Text style={styles.confirmButtonText}>
-                    Jadwalkan Penjemputan Sekarang
-                  </Text>
+                <View
+                  style={[
+                    styles.confirmButtonSurface,
+                    isSubmitting && styles.confirmButtonSurfaceDisabled,
+                  ]}
+                >
+                  {isSubmitting ? (
+                    <View style={styles.loadingRow}>
+                      <ActivityIndicator size="small" color="#ffffff" />
+                      <Text style={styles.confirmButtonText}>
+                        Memverifikasi Jadwal...
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.confirmButtonText}>
+                      Jadwalkan Penjemputan Sekarang
+                    </Text>
+                  )}
                 </View>
               </Pressable>
             </ScrollView>
           ) : (
             <View style={styles.successContainer}>
               <View style={styles.successIconCircle}>
-                <Check size={36} color="#2e7d32" strokeWidth={3} />
+                <Check size={36} color={COLORS.success} strokeWidth={3} />
               </View>
               <Text style={styles.successTitle}>
                 Pesanan Berhasil Dijadwalkan!
               </Text>
               <Text style={styles.successDescription}>
-                Kurir PJLaundry akan menjemput cucian Anda pada{" "}
+                Kurir PJLaundry siap menjemput cucian Anda pada{" "}
                 {selectedDate.fullDescription}, slot {selectedSlot.slotName} (
                 {selectedSlot.hours}).
               </Text>
 
+              {/* Demo Status & Order Number Badge */}
+              <View style={styles.demoReferenceBox}>
+                <View style={styles.demoStatusPill}>
+                  <Text style={styles.demoStatusText}>
+                    STATUS: SIMULASI DIKONFIRMASI
+                  </Text>
+                </View>
+                <Text style={styles.demoOrderNumberText}>
+                  No. Referensi: {currentDemoOrderNumber}
+                </Text>
+              </View>
+
+              {/* Order Recap */}
               <View style={styles.successOrderSummary}>
                 <Text style={styles.successSummaryRow}>
-                  Paket: {selectedService?.name}
+                  <Text style={styles.boldText}>Paket: </Text>
+                  {selectedService?.name} ({quantity} {selectedService?.unit})
                 </Text>
                 <Text style={styles.successSummaryRow}>
-                  Estimasi Muatan: {quantity} {selectedService?.unit}
+                  <Text style={styles.boldText}>Subtotal: </Text>
+                  {formatRupiah(estimatedTotal)}
                 </Text>
                 <Text style={styles.successSummaryRow}>
-                  Total Estimasi: {formatRupiah(estimatedTotal)}
+                  <Text style={styles.boldText}>Biaya Antar-Jemput: </Text>
+                  Gratis (Promo Radius Terdekat)
                 </Text>
                 <Text style={styles.successSummaryRow}>
-                  Alamat: {pickupAddress}
+                  <Text style={styles.boldText}>Alamat: </Text>
+                  {pickupAddress}
                 </Text>
                 {orderNotes.trim() ? (
                   <Text style={styles.successSummaryRow}>
-                    Catatan: {orderNotes}
+                    <Text style={styles.boldText}>Catatan: </Text>
+                    {orderNotes}
                   </Text>
                 ) : null}
+              </View>
+
+              {/* Explicit Prototype Disclaimer Notice */}
+              <View style={styles.prototypeNoticeCard}>
+                <Info size={16} color={COLORS.warning} style={styles.noticeIcon} />
+                <Text style={styles.prototypeNoticeText}>
+                  Mode Simulasi Prototype: Ini adalah alur simulasi interaksi
+                  antarmuka. Data tersimpan di memori lokal dan tidak memanggil
+                  armada kurir operasional nyata.
+                </Text>
               </View>
 
               <View style={styles.successButtonWrapper}>
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Tutup dialog dan kembali ke daftar layanan"
-                  onPress={onClose}
+                  onPress={handleClose}
                   style={({ pressed }) => [
                     styles.fullWidthTouch,
                     pressed && styles.pressed,
                   ]}
                 >
                   <View style={styles.confirmButtonSurface}>
-                    <Text style={styles.confirmButtonText}>Kembali ke Katalog</Text>
+                    <Text style={styles.confirmButtonText}>
+                      Kembali ke Katalog
+                    </Text>
                   </View>
                 </Pressable>
               </View>
@@ -382,25 +551,26 @@ export default function PickupScheduleModal({
 const styles = StyleSheet.create({
   modalBackdrop: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(15, 23, 42, 0.6)",
     justifyContent: "flex-end",
   },
   modalOverlayDismiss: {
     flex: 1,
   },
   modalSheet: {
-    backgroundColor: ONBOARDING_COLORS.surface,
+    backgroundColor: COLORS.surfacePrimary,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
     paddingTop: 12,
     maxHeight: "90%",
+    ...SHADOWS.modal,
   },
   modalDragHandle: {
-    width: 40,
+    width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#cccccc",
+    backgroundColor: COLORS.borderDefault,
     alignSelf: "center",
     marginBottom: 12,
   },
@@ -418,38 +588,39 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   modalTitle: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 18,
     fontWeight: "700",
+    letterSpacing: -0.2,
   },
   modalSubtitle: {
-    color: "#666666",
+    color: COLORS.textSecondary,
     fontSize: 13,
     marginTop: 2,
   },
-  touchTarget44: {
-    minWidth: 44,
-    minHeight: 44,
+  touchTarget: {
+    minWidth: TOUCH_TARGET.min,
+    minHeight: TOUCH_TARGET.min,
     alignItems: "center",
     justifyContent: "center",
   },
   modalCloseButtonSurface: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: ONBOARDING_COLORS.background,
+    width: 36,
+    height: 36,
+    borderRadius: RADIUS.full,
+    backgroundColor: COLORS.surfaceSecondary,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
+    borderColor: COLORS.borderDefault,
   },
   modalOrderSummaryCard: {
-    backgroundColor: ONBOARDING_COLORS.background,
-    borderRadius: 14,
+    backgroundColor: COLORS.brandBlueSoft,
+    borderRadius: RADIUS.input,
     padding: 14,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
+    borderColor: COLORS.brandBlueSoft,
   },
   modalServiceRow: {
     flexDirection: "row",
@@ -457,19 +628,37 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   modalServiceName: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.brandBlueDark,
     fontSize: 15,
     fontWeight: "700",
   },
   modalServicePrice: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.brandBlueDark,
     fontSize: 16,
     fontWeight: "700",
   },
   modalServiceDetail: {
-    color: "#555555",
+    color: COLORS.textSecondary,
     fontSize: 12,
-    marginTop: 6,
+    marginTop: 4,
+  },
+  feeBreakdownRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(57, 152, 229, 0.2)",
+  },
+  feeBreakdownLabel: {
+    color: COLORS.textSecondary,
+    fontSize: 11,
+  },
+  feeBreakdownValue: {
+    color: COLORS.success,
+    fontSize: 11,
+    fontWeight: "700",
   },
   formGroup: {
     marginBottom: 16,
@@ -481,22 +670,37 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   formLabel: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 13,
     fontWeight: "700",
   },
   formTextInput: {
-    minHeight: 48,
-    backgroundColor: "#f7f7f7",
+    minHeight: TOUCH_TARGET.min,
+    backgroundColor: COLORS.surfaceSecondary,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
-    borderRadius: 12,
+    borderColor: COLORS.borderDefault,
+    borderRadius: RADIUS.input,
     paddingHorizontal: 14,
     fontSize: 14,
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
+  },
+  formTextInputError: {
+    borderColor: COLORS.error,
+    backgroundColor: COLORS.errorSurface,
+  },
+  errorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 6,
+  },
+  errorText: {
+    color: COLORS.error,
+    fontSize: 12,
+    fontWeight: "500",
   },
   formTextArea: {
-    minHeight: 74,
+    minHeight: 76,
     paddingTop: 12,
     textAlignVertical: "top",
   },
@@ -512,33 +716,41 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 8,
-    borderRadius: 12,
-    backgroundColor: "#f7f7f7",
-    borderWidth: 1.5,
-    borderColor: "#e0e0e0",
+    borderRadius: RADIUS.input,
     alignItems: "center",
     justifyContent: "center",
   },
   dateChipSurfaceActive: {
-    backgroundColor: ONBOARDING_COLORS.peach,
-    borderColor: ONBOARDING_COLORS.text,
+    backgroundColor: COLORS.brandBlue,
+    borderWidth: 1.5,
+    borderColor: COLORS.brandBlueDark,
+    shadowColor: COLORS.brandBlueDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
     elevation: 2,
   },
+  dateChipSurfaceInactive: {
+    backgroundColor: COLORS.surfaceSecondary,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderDefault,
+  },
   dateChipDay: {
-    color: ONBOARDING_COLORS.text,
     fontSize: 13,
     fontWeight: "600",
+    color: COLORS.textPrimary,
   },
   dateChipDayActive: {
+    color: COLORS.textOnAccent,
     fontWeight: "700",
   },
   dateChipDate: {
-    color: "#666666",
     fontSize: 11,
     marginTop: 2,
+    color: COLORS.textSecondary,
   },
   dateChipDateActive: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textOnAccent,
     fontWeight: "600",
   },
   timeSlotCardsContainer: {
@@ -546,34 +758,46 @@ const styles = StyleSheet.create({
   },
   timeSlotTouchTarget: {
     width: "100%",
-    minHeight: 56,
+    minHeight: TOUCH_TARGET.min,
+  },
+  timeSlotDisabled: {
+    opacity: 0.5,
   },
   timeSlotCardSurface: {
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    borderRadius: 14,
-    backgroundColor: "#fbfbfb",
-    borderWidth: 1.5,
-    borderColor: "#e5e5e5",
+    borderRadius: RADIUS.input,
     gap: 12,
   },
   timeSlotCardSurfaceActive: {
-    backgroundColor: "#ffffff",
-    borderColor: ONBOARDING_COLORS.blue,
+    backgroundColor: COLORS.surfacePrimary,
+    borderWidth: 1.5,
+    borderColor: COLORS.brandBlue,
     elevation: 2,
+  },
+  timeSlotCardSurfaceInactive: {
+    backgroundColor: COLORS.surfaceSecondary,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderDefault,
+  },
+  timeSlotSurfaceDisabled: {
+    backgroundColor: COLORS.surfaceSecondary,
+    borderColor: COLORS.borderDefault,
   },
   timeSlotIconCircle: {
     width: 38,
     height: 38,
-    borderRadius: 10,
-    backgroundColor: "#eeeeee",
+    borderRadius: RADIUS.input,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
   timeSlotIconCircleActive: {
-    backgroundColor: ONBOARDING_COLORS.lightBlue,
+    backgroundColor: COLORS.brandBlueSoft,
+  },
+  timeSlotIconCircleInactive: {
+    backgroundColor: COLORS.surfacePrimary,
   },
   timeSlotDetails: {
     flex: 1,
@@ -585,20 +809,52 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   timeSlotTitle: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 14,
     fontWeight: "600",
   },
   timeSlotTitleActive: {
     fontWeight: "700",
+    color: COLORS.brandBlueDark,
+  },
+  timeSlotTitleDisabled: {
+    color: COLORS.textDisabled,
+  },
+  slotBadgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   timeSlotHours: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 13,
     fontWeight: "700",
   },
+  slotAvailabilityBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: RADIUS.full,
+  },
+  slotBadgeAvailable: {
+    backgroundColor: COLORS.successSurface,
+  },
+  slotBadgeFull: {
+    backgroundColor: COLORS.surfaceSecondary,
+    borderWidth: 1,
+    borderColor: COLORS.borderDefault,
+  },
+  slotBadgeText: {
+    fontSize: 10,
+    fontWeight: "700",
+  },
+  slotBadgeTextAvailable: {
+    color: COLORS.success,
+  },
+  slotBadgeTextFull: {
+    color: COLORS.textDisabled,
+  },
   timeSlotNote: {
-    color: "#666666",
+    color: COLORS.textSecondary,
     fontSize: 11,
     marginTop: 2,
   },
@@ -607,112 +863,173 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: "#cccccc",
+    borderColor: COLORS.borderDefault,
     alignItems: "center",
     justifyContent: "center",
   },
   radioIndicatorSelected: {
-    borderColor: ONBOARDING_COLORS.blue,
-    backgroundColor: ONBOARDING_COLORS.blue,
+    borderColor: COLORS.brandBlue,
+    backgroundColor: COLORS.brandBlue,
+  },
+  radioIndicatorDisabled: {
+    borderColor: COLORS.borderDefault,
   },
   radioIndicatorDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.surfacePrimary,
   },
   scheduleBadgeContainer: {
-    backgroundColor: ONBOARDING_COLORS.peach,
-    borderRadius: 12,
+    backgroundColor: COLORS.brandOrangeSoft,
+    borderRadius: RADIUS.input,
     padding: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
+    borderColor: COLORS.brandOrange,
   },
   scheduleBadgeTitle: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textOnWarm,
     fontSize: 11,
     fontWeight: "700",
     textTransform: "uppercase",
   },
   scheduleBadgeValue: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textOnWarm,
     fontSize: 13,
     fontWeight: "600",
     marginTop: 2,
   },
   confirmButtonTouch: {
     width: "100%",
-    minHeight: 52,
+    minHeight: TOUCH_TARGET.min,
     marginTop: 8,
   },
   fullWidthTouch: {
     width: "100%",
-    minHeight: 52,
+    minHeight: TOUCH_TARGET.min,
   },
   successButtonWrapper: {
     alignSelf: "stretch",
-    marginTop: 8,
+    marginTop: 12,
   },
   confirmButtonSurface: {
     width: "100%",
     minHeight: 52,
-    borderRadius: 14,
-    backgroundColor: ONBOARDING_COLORS.blue,
+    borderRadius: RADIUS.button,
+    backgroundColor: COLORS.brandBlue,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
+    shadowColor: COLORS.brandBlueDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
     elevation: 3,
   },
+  confirmButtonSurfaceDisabled: {
+    backgroundColor: COLORS.brandBlueDark,
+    opacity: 0.8,
+  },
+  loadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   confirmButtonText: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textOnAccent,
     fontSize: 15,
     fontWeight: "700",
   },
   successContainer: {
     alignItems: "center",
-    paddingVertical: 16,
+    paddingVertical: 12,
   },
   successIconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: "#e8f5e9",
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.successSurface,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   successTitle: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 18,
     fontWeight: "700",
     textAlign: "center",
   },
   successDescription: {
-    color: "#555555",
+    color: COLORS.textSecondary,
     fontSize: 13,
-    lineHeight: 20,
+    lineHeight: 19,
     textAlign: "center",
-    marginTop: 8,
+    marginTop: 6,
+    paddingHorizontal: 8,
+  },
+  demoReferenceBox: {
+    alignItems: "center",
+    marginTop: 12,
+    gap: 6,
+  },
+  demoStatusPill: {
+    backgroundColor: COLORS.brandBlueSoft,
     paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: RADIUS.full,
+  },
+  demoStatusText: {
+    color: COLORS.brandBlueDark,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.2,
+  },
+  demoOrderNumberText: {
+    color: COLORS.textPrimary,
+    fontSize: 14,
+    fontWeight: "700",
   },
   successOrderSummary: {
     width: "100%",
-    backgroundColor: ONBOARDING_COLORS.background,
-    borderRadius: 12,
+    backgroundColor: COLORS.surfaceSecondary,
+    borderRadius: RADIUS.input,
     padding: 14,
-    marginVertical: 18,
+    marginTop: 14,
+    marginBottom: 10,
     gap: 6,
     borderWidth: 1,
-    borderColor: "rgba(51, 51, 51, 0.08)",
+    borderColor: COLORS.borderDefault,
   },
   successSummaryRow: {
-    color: ONBOARDING_COLORS.text,
+    color: COLORS.textPrimary,
     fontSize: 13,
     lineHeight: 18,
   },
+  boldText: {
+    fontWeight: "700",
+  },
+  prototypeNoticeCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: COLORS.warningSurface,
+    borderRadius: RADIUS.input,
+    padding: 10,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "rgba(168, 100, 8, 0.2)",
+    marginBottom: 8,
+  },
+  noticeIcon: {
+    marginTop: 2,
+    flexShrink: 0,
+  },
+  prototypeNoticeText: {
+    flex: 1,
+    color: COLORS.textOnWarm,
+    fontSize: 11,
+    lineHeight: 16,
+  },
   pressed: {
-    opacity: 0.82,
+    opacity: 0.85,
   },
 });

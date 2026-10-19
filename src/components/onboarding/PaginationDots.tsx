@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from "react-native";
 
 import type { OnboardingData } from "../../features/onboarding/onboardingData";
-import { ONBOARDING_COLORS } from "../../features/onboarding/onboardingData";
+import { COLORS, TOUCH_TARGET } from "../../theme/tokens";
 
 type PaginationDotsProps = {
   activeIndex: number;
@@ -36,9 +36,9 @@ export default function PaginationDots({
                 styles.dot,
                 {
                   backgroundColor: isActive
-                    ? ONBOARDING_COLORS.blue
-                    : ONBOARDING_COLORS.lightBlue,
-                  width: isActive ? 32 : 8,
+                    ? COLORS.brandBlue
+                    : COLORS.borderDefault,
+                  width: isActive ? 28 : 8,
                 },
               ]}
             />
@@ -55,11 +55,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    gap: 6,
+    gap: 4,
     marginBottom: 16,
   },
   dotTouch: {
-    minHeight: 44,
+    minHeight: TOUCH_TARGET.min,
+    minWidth: 32,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 4,
