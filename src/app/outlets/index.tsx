@@ -25,6 +25,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -535,28 +536,24 @@ export default function OutletsAndReviewsScreen() {
                   textAlignVertical="top"
                 />
 
-                {/* Tombol Simpan Ulasan */}
-                <Pressable
+                {/* Tombol Simpan Ulasan di dalam Card Form */}
+                <TouchableOpacity
+                  activeOpacity={0.8}
                   accessibilityRole="button"
                   accessibilityLabel="Simpan dan kirim ulasan ke API server"
                   onPress={handleSubmitReview}
                   disabled={isSubmittingReview}
-                  style={({ pressed }) => [
-                    styles.submitButtonTouch,
-                    pressed && styles.pressed,
-                  ]}
+                  style={[styles.actionSubmitBtn, isSubmittingReview && styles.buttonDisabled]}
                 >
-                  <View style={[styles.submitButtonSurface, isSubmittingReview && styles.buttonDisabled]}>
-                    {isSubmittingReview ? (
-                      <ActivityIndicator size="small" color="#FFFFFF" />
-                    ) : (
-                      <>
-                        <CheckCircle size={18} color="#FFFFFF" />
-                        <Text style={styles.submitButtonText}>Simpan & Kirim Ulasan</Text>
-                      </>
-                    )}
-                  </View>
-                </Pressable>
+                  {isSubmittingReview ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <>
+                      <CheckCircle size={18} color="#FFFFFF" />
+                      <Text style={styles.actionSubmitBtnText}>Simpan & Kirim Ulasan</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
               </View>
             ) : null}
 
@@ -629,27 +626,23 @@ export default function OutletsAndReviewsScreen() {
       {/* STICKY FOOTER: Tombol Simpan Selalu Terlihat di Bagian Bawah Layar iPhone/Android */}
       {!loading && activeTab === "reviews" ? (
         <View style={styles.stickyFooterBar}>
-          <Pressable
+          <TouchableOpacity
+            activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Simpan dan kirim ulasan ke API server"
             onPress={handleSubmitReview}
             disabled={isSubmittingReview}
-            style={({ pressed }) => [
-              styles.submitButtonTouch,
-              pressed && styles.pressed,
-            ]}
+            style={[styles.actionSubmitBtn, isSubmittingReview && styles.buttonDisabled]}
           >
-            <View style={[styles.submitButtonSurface, isSubmittingReview && styles.buttonDisabled]}>
-              {isSubmittingReview ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <>
-                  <CheckCircle size={18} color="#FFFFFF" />
-                  <Text style={styles.submitButtonText}>Simpan & Kirim Ulasan</Text>
-                </>
-              )}
-            </View>
-          </Pressable>
+            {isSubmittingReview ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <>
+                <CheckCircle size={18} color="#FFFFFF" />
+                <Text style={styles.actionSubmitBtnText}>Simpan & Kirim Ulasan</Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
       ) : null}
     </SafeAreaView>
@@ -1039,44 +1032,46 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     minHeight: 85,
   },
-  submitButtonTouch: {
-    width: "100%",
-  },
-  submitButtonSurface: {
+  actionSubmitBtn: {
     width: "100%",
     minHeight: 52,
-    backgroundColor: "#2476BC",
-    borderRadius: 14,
+    backgroundColor: "#0284C7",
+    borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
     paddingHorizontal: 16,
-    shadowColor: "#0F172A",
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: "#0369A1",
+    shadowColor: "#0284C7",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 4,
+    marginTop: 12,
+  },
+  actionSubmitBtnText: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    textAlign: "center",
+    letterSpacing: 0.3,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
-  submitButtonText: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: "#FFFFFF",
-    letterSpacing: 0.3,
-  },
   stickyFooterBar: {
-    backgroundColor: COLORS.surfacePrimary,
+    backgroundColor: "#FFFFFF",
     borderTopWidth: 1,
-    borderTopColor: COLORS.borderDefault,
+    borderTopColor: "#E2E8F0",
     paddingHorizontal: SPACING.base,
     paddingTop: SPACING.sm,
-    paddingBottom: SPACING.md,
+    paddingBottom: 24,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 8,
   },
