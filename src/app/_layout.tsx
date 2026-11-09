@@ -19,6 +19,8 @@ export default function RootLayout() {
           headerShadowVisible: false,
         }}
       />
+      <Stack.Screen name="outlets/index" options={{ headerShown: false }} />
+      <Stack.Screen name="order" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -1,4 +1,5 @@
 import { Stack, useRouter } from "expo-router";
+import { Building2, ChevronRight } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -128,6 +129,28 @@ export default function ServicesCatalogScreen() {
             selectedCategoryId={selectedCategoryId}
             onSelectCategory={setSelectedCategoryId}
           />
+
+          {/* Banner Menuju Fitur Outlet & Review (Modul 3 - Anggota 2) */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Buka halaman cabang outlet dan ulasan"
+            onPress={() => router.push("/outlets" as any)}
+            style={({ pressed }) => [
+              styles.outletBanner,
+              pressed && styles.pressed,
+            ]}
+          >
+            <View style={styles.outletBannerLeft}>
+              <View style={styles.outletIconCircle}>
+                <Building2 size={18} color={COLORS.brandBlueDark} />
+              </View>
+              <View>
+                <Text style={styles.outletBannerTitle}>Cabang Outlet & Ulasan</Text>
+                <Text style={styles.outletBannerSubtitle}>Cek cabang terdekat & rating kepuasan</Text>
+              </View>
+            </View>
+            <ChevronRight size={18} color={COLORS.brandBlueDark} />
+          </Pressable>
 
           <View style={styles.servicesList}>
             {filteredServices.length === 0 ? (
@@ -271,6 +294,41 @@ const styles = StyleSheet.create({
     color: COLORS.brandBlueDark,
     fontSize: 14,
     fontWeight: "700",
+  },
+  outletBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: COLORS.brandBlueSoft,
+    borderRadius: RADIUS.card,
+    padding: SPACING.md + 2,
+    borderWidth: 1,
+    borderColor: "#CCE4F9",
+    marginTop: SPACING.md,
+    marginBottom: SPACING.xs,
+  },
+  outletBannerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  outletIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: RADIUS.full,
+    backgroundColor: COLORS.surfacePrimary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  outletBannerTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+  },
+  outletBannerSubtitle: {
+    fontSize: 11,
+    color: COLORS.brandBlueDark,
+    marginTop: 1,
   },
   pressed: {
     opacity: 0.8,
