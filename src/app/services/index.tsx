@@ -1,5 +1,5 @@
 import { Stack, useRouter } from "expo-router";
-import { Building2, ChevronRight } from "lucide-react-native";
+import { Building2, ChevronRight, MapPin, PenLine } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -176,26 +176,53 @@ export default function ServicesCatalogScreen() {
           ) : null}
 
           {/* Banner Menuju Fitur Outlet & Review (Modul 3 - Anggota 2) */}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Buka halaman cabang outlet dan ulasan"
-            onPress={() => router.push("/outlets" as any)}
-            style={({ pressed }) => [
-              styles.outletBanner,
-              pressed && styles.pressed,
-            ]}
-          >
+          <View style={styles.outletBannerCard}>
             <View style={styles.outletBannerLeft}>
               <View style={styles.outletIconCircle}>
-                <Building2 size={18} color={COLORS.brandBlueDark} />
+                <Building2 size={20} color={COLORS.brandBlueDark} />
               </View>
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text style={styles.outletBannerTitle}>Cabang Outlet & Ulasan</Text>
-                <Text style={styles.outletBannerSubtitle}>Cek cabang terdekat & rating kepuasan</Text>
+                <Text style={styles.outletBannerSubtitle}>Cek cabang terdekat & bagikan pengalaman Anda</Text>
               </View>
             </View>
-            <ChevronRight size={18} color={COLORS.brandBlueDark} />
-          </Pressable>
+
+            {/* Quick Actions: Cabang & Tulis Ulasan */}
+            <View style={styles.outletBannerActions}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Lihat daftar cabang outlet"
+                onPress={() => router.push("/outlets" as any)}
+                style={({ pressed }) => [
+                  styles.outletActionBtn,
+                  styles.outletBtnOutline,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <MapPin size={14} color={COLORS.brandBlueDark} />
+                <Text style={styles.outletBtnOutlineText}>Lihat Cabang</Text>
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Tulis ulasan pengalaman pelanggan"
+                onPress={() =>
+                  router.push({
+                    pathname: "/outlets",
+                    params: { tab: "reviews" },
+                  } as any)
+                }
+                style={({ pressed }) => [
+                  styles.outletActionBtn,
+                  styles.outletBtnPrimary,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <PenLine size={14} color={COLORS.textOnAccent} />
+                <Text style={styles.outletBtnPrimaryText}>Tulis Ulasan</Text>
+              </Pressable>
+            </View>
+          </View>
 
           {isLoadingCatalog ? (
             <View style={styles.statusState}>
@@ -448,17 +475,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
   },
-  outletBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  outletBannerCard: {
     backgroundColor: COLORS.brandBlueSoft,
     borderRadius: RADIUS.card,
-    padding: SPACING.md + 2,
+    padding: SPACING.md,
     borderWidth: 1,
     borderColor: "#CCE4F9",
     marginTop: SPACING.md,
     marginBottom: SPACING.xs,
+    gap: 12,
   },
   outletBannerLeft: {
     flexDirection: "row",
@@ -466,8 +491,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   outletIconCircle: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     borderRadius: RADIUS.full,
     backgroundColor: COLORS.surfacePrimary,
     alignItems: "center",
@@ -482,6 +507,38 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: COLORS.brandBlueDark,
     marginTop: 1,
+  },
+  outletBannerActions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  outletActionBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    borderRadius: RADIUS.button,
+    gap: 6,
+    minHeight: 40,
+  },
+  outletBtnOutline: {
+    backgroundColor: COLORS.surfacePrimary,
+    borderWidth: 1,
+    borderColor: COLORS.brandBlue,
+  },
+  outletBtnOutlineText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: COLORS.brandBlueDark,
+  },
+  outletBtnPrimary: {
+    backgroundColor: COLORS.brandBlue,
+  },
+  outletBtnPrimaryText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: COLORS.textOnAccent,
   },
   pressed: {
     opacity: 0.8,

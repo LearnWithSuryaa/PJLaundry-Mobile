@@ -1,8 +1,9 @@
-import { Stack, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
   ArrowLeft,
   Building2,
   CheckCircle,
+  ChevronRight,
   Filter,
   MessageSquare,
   PenLine,
@@ -45,9 +46,20 @@ type ActiveTab = "outlets" | "reviews";
 
 export default function OutletsAndReviewsScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ tab?: string }>();
 
-  // Tab State
-  const [activeTab, setActiveTab] = useState<ActiveTab>("outlets");
+  // Tab State: otomatis ke "reviews" jika dipanggil dengan params tab=reviews
+  const [activeTab, setActiveTab] = useState<ActiveTab>(
+    params.tab === "reviews" ? "reviews" : "outlets"
+  );
+
+  // Sync tab jika params berubah
+  useEffect(() => {
+    if (params.tab === "reviews") {
+      setActiveTab("reviews");
+      setIsFormVisible(true);
+    }
+  }, [params.tab]);
 
   // API Data States (Object dari response API menggunakan Interface)
   const [outlets, setOutlets] = useState<Outlet[]>([]);
@@ -63,8 +75,8 @@ export default function OutletsAndReviewsScreen() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedRatingFilter, setSelectedRatingFilter] = useState<number | "all">("all");
 
-  // Form Input Ulasan Baru (Kirim Pengalaman Pelanggan ke API)
-  const [isFormVisible, setIsFormVisible] = useState<boolean>(false);
+  // Form Input Ulasan Baru (Selalu Terbuka agar Langsung Terlihat di iOS / Android)
+  const [isFormVisible, setIsFormVisible] = useState<boolean>(true);
   const [newCustomerName, setNewCustomerName] = useState<string>("");
   const [newRating, setNewRating] = useState<number>(5);
   const [newComment, setNewComment] = useState<string>("");
@@ -319,6 +331,31 @@ export default function OutletsAndReviewsScreen() {
         {/* ================= TAB 1: OUTLETS ================= */}
         {!loading && activeTab === "outlets" ? (
           <View>
+            {/* Banner Ajakan Menulis Ulasan */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Buka tab tulis ulasan pengalaman"
+              onPress={() => {
+                setActiveTab("reviews");
+                setIsFormVisible(true);
+              }}
+              style={({ pressed }) => [
+                styles.reviewPromoBanner,
+                pressed && styles.pressed,
+              ]}
+            >
+              <View style={styles.reviewPromoLeft}>
+                <View style={styles.reviewPromoIcon}>
+                  <PenLine size={18} color={COLORS.brandBlueDark} />
+                </View>
+                <View>
+                  <Text style={styles.reviewPromoTitle}>Pernah Mencuci di PJLaundry?</Text>
+                  <Text style={styles.reviewPromoSubtitle}>Tulis pengalaman Anda & bantu pelanggan lain →</Text>
+                </View>
+              </View>
+              <ChevronRight size={18} color={COLORS.brandBlueDark} />
+            </Pressable>
+
             {/* Search Outlet */}
             <View style={styles.searchBar}>
               <Search size={18} color={COLORS.textSecondary} />
@@ -657,6 +694,41 @@ const styles = StyleSheet.create({
   tabTextActive: {
     color: COLORS.brandBlueDark,
     fontWeight: "700",
+  },
+  reviewPromoBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: COLORS.brandOrangeSoft,
+    borderWidth: 1,
+    borderColor: COLORS.brandOrange,
+    borderRadius: RADIUS.card,
+    padding: SPACING.md,
+    marginBottom: SPACING.base,
+  },
+  reviewPromoLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
+  reviewPromoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: RADIUS.full,
+    backgroundColor: COLORS.surfacePrimary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  reviewPromoTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+  },
+  reviewPromoSubtitle: {
+    fontSize: 11,
+    color: COLORS.textOnWarm,
+    marginTop: 2,
   },
   searchBar: {
     flexDirection: "row",
