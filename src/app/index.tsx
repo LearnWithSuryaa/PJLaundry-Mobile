@@ -1,9 +1,9 @@
 import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
+import { StatusBar } from "expo-status-bar";
 import {
   Pressable,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -56,7 +56,7 @@ export default function OnboardingScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.bgPrimary} />
+      <StatusBar style="dark" />
 
       <View style={styles.container}>
         {/* Header with Official Logo & Accessible Skip Button */}

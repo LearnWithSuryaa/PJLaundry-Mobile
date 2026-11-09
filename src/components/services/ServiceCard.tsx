@@ -1,9 +1,9 @@
-import { Check, Clock, Minus, Plus } from "lucide-react-native";
+import { Check, ChevronRight, Clock, Minus, Plus } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { LaundryService } from "../../features/services/servicesData";
 import { formatRupiah } from "../../features/services/servicesData";
-import { COLORS, RADIUS, SHADOWS, TOUCH_TARGET } from "../../theme/tokens";
+import { COLORS, RADIUS, SHADOWS } from "../../theme/tokens";
 
 type ServiceCardProps = {
   service: LaundryService;
@@ -13,16 +13,17 @@ type ServiceCardProps = {
   onSelect: (service: LaundryService) => void;
   onDecreaseQuantity: () => void;
   onIncreaseQuantity: () => void;
+  onViewDetail?: (service: LaundryService) => void;
 };
 
 export default function ServiceCard({
   service,
   isSelected,
   quantity,
-  isNarrow,
   onSelect,
   onDecreaseQuantity,
   onIncreaseQuantity,
+  onViewDetail,
 }: ServiceCardProps) {
   const ServiceIcon = service.icon;
 
@@ -31,7 +32,9 @@ export default function ServiceCard({
       <View
         style={[
           styles.cardSurface,
-          isSelected ? styles.cardSurfaceSelected : styles.cardSurfaceUnselected,
+          isSelected
+            ? styles.cardSurfaceSelected
+            : styles.cardSurfaceUnselected,
         ]}
       >
         {/* Main Card Pressable */}
@@ -54,8 +57,8 @@ export default function ServiceCard({
                 service.isExpress
                   ? styles.iconTileExpress
                   : isSelected
-                  ? styles.iconTileSelected
-                  : styles.iconTileDefault,
+                    ? styles.iconTileSelected
+                    : styles.iconTileDefault,
               ]}
             >
               <ServiceIcon
@@ -64,8 +67,8 @@ export default function ServiceCard({
                   service.isExpress
                     ? COLORS.brandOrange
                     : isSelected
-                    ? COLORS.brandBlueDark
-                    : COLORS.brandBlue
+                      ? COLORS.brandBlueDark
+                      : COLORS.brandBlue
                 }
                 strokeWidth={2.2}
               />
@@ -95,7 +98,11 @@ export default function ServiceCard({
                 <View style={styles.metaDividerDot} />
 
                 <View style={styles.durationBadge}>
-                  <Clock size={11} color={COLORS.textSecondary} strokeWidth={2} />
+                  <Clock
+                    size={11}
+                    color={COLORS.textSecondary}
+                    strokeWidth={2}
+                  />
                   <Text style={styles.durationText}>{service.duration}</Text>
                 </View>
               </View>
@@ -117,6 +124,30 @@ export default function ServiceCard({
                   </View>
                 ))}
               </View>
+
+              {/* Action: Lihat Detail */}
+              {onViewDetail && (
+                <View style={styles.detailActionWrapper}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Lihat halaman detail paket ${service.name}`}
+                    onPress={() => onViewDetail(service)}
+                    style={({ pressed }) => [
+                      styles.detailButton,
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <Text style={styles.detailButtonText}>
+                      Lihat Detail Paket
+                    </Text>
+                    <ChevronRight
+                      size={14}
+                      color={COLORS.brandBlueDark}
+                      strokeWidth={2.4}
+                    />
+                  </Pressable>
+                </View>
+              )}
             </View>
           </View>
 
@@ -170,7 +201,8 @@ export default function ServiceCard({
                 <View
                   style={[
                     styles.stepperButtonSurface,
-                    quantity <= service.minOrder && styles.stepperButtonDisabled,
+                    quantity <= service.minOrder &&
+                      styles.stepperButtonDisabled,
                   ]}
                 >
                   <Minus
@@ -203,7 +235,8 @@ export default function ServiceCard({
                 <View
                   style={[
                     styles.stepperButtonSurface,
-                    quantity >= service.maxOrder && styles.stepperButtonDisabled,
+                    quantity >= service.maxOrder &&
+                      styles.stepperButtonDisabled,
                   ]}
                 >
                   <Plus
@@ -375,6 +408,27 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     lineHeight: 17,
     flex: 1,
+  },
+  detailActionWrapper: {
+    marginTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  detailButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: RADIUS.sm,
+    backgroundColor: COLORS.brandBlueSoft,
+    borderWidth: 1,
+    borderColor: "#D6E9FA",
+  },
+  detailButtonText: {
+    color: COLORS.brandBlueDark,
+    fontSize: 12,
+    fontWeight: "700",
   },
   radioIndicator: {
     position: "absolute",

@@ -1,9 +1,9 @@
-import { Stack } from "expo-router";
-import { useMemo, useState } from "react";
+import { Stack, useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
+import { StatusBar } from "expo-status-bar";
 import {
   Pressable,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -11,32 +11,31 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-import PickupScheduleModal from "../components/services/PickupScheduleModal";
-import ServiceBottomBar from "../components/services/ServiceBottomBar";
-import ServiceCard from "../components/services/ServiceCard";
-import ServiceHeader from "../components/services/ServiceHeader";
-import ServiceSearchFilter from "../components/services/ServiceSearchFilter";
+import PickupScheduleModal from "../../components/services/PickupScheduleModal";
+import ServiceBottomBar from "../../components/services/ServiceBottomBar";
+import ServiceCard from "../../components/services/ServiceCard";
+import ServiceHeader from "../../components/services/ServiceHeader";
+import ServiceSearchFilter from "../../components/services/ServiceSearchFilter";
 import type {
   LaundryService,
   ServiceCategory,
-} from "../features/services/servicesData";
+} from "../../features/services/servicesData";
 import {
   getUpcomingPickupDates,
   SERVICES,
-} from "../features/services/servicesData";
-import { COLORS, RADIUS, SHADOWS, SPACING, TOUCH_TARGET } from "../theme/tokens";
+} from "../../features/services/servicesData";
+import { COLORS, RADIUS, SHADOWS, SPACING, TOUCH_TARGET } from "../../theme/tokens";
 
-export default function ServicesScreen() {
+export default function ServicesCatalogScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const isNarrow = width < 360;
 
-  // Filter & Search State
+  // 1. useState: Filter kategori, Search query, Counter jumlah/berat cucian
   const [selectedCategoryId, setSelectedCategoryId] =
     useState<ServiceCategory>("all");
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Service Selection State
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
     "kiloan-komplit"
   );
@@ -51,6 +50,13 @@ export default function ServicesScreen() {
   const [selectedDateId, setSelectedDateId] = useState<string>("today");
   const [selectedSlotId, setSelectedSlotId] = useState<string>("pagi");
   const [orderNotes, setOrderNotes] = useState("");
+
+  // 2. useEffect: Log riwayat pencarian otomatis saat kata kunci berubah
+  useEffect(() => {
+    if (searchQuery.trim().length > 0) {
+      console.log(`[Riwayat Pencarian]: "${searchQuery.trim()}"`);
+    }
+  }, [searchQuery]);
 
   const pickupDates = useMemo(() => getUpcomingPickupDates(), []);
 
@@ -78,6 +84,14 @@ export default function ServicesScreen() {
     setQuantity(service.minOrder);
   };
 
+  // 3. push(): router.push("/services/[id]") dari daftar ke detail paket
+  const handleViewDetail = (service: LaundryService) => {
+    router.push({
+      pathname: "/services/[id]",
+      params: { id: service.id },
+    } as any);
+  };
+
   const handleDecreaseQuantity = () => {
     if (!selectedService) return;
     setQuantity((prev) => Math.max(selectedService.minOrder, prev - 1));
@@ -95,10 +109,7 @@ export default function ServicesScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={COLORS.surfacePrimary}
-      />
+      <StatusBar style="dark" />
 
       <View style={styles.container}>
         <ServiceHeader />
@@ -155,6 +166,7 @@ export default function ServicesScreen() {
                   onSelect={handleSelectService}
                   onDecreaseQuantity={handleDecreaseQuantity}
                   onIncreaseQuantity={handleIncreaseQuantity}
+                  onViewDetail={handleViewDetail}
                 />
               ))
             )}
