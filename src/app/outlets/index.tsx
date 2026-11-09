@@ -542,19 +542,20 @@ export default function OutletsAndReviewsScreen() {
                   onPress={handleSubmitReview}
                   disabled={isSubmittingReview}
                   style={({ pressed }) => [
-                    styles.submitButton,
-                    isSubmittingReview && styles.buttonDisabled,
+                    styles.submitButtonTouch,
                     pressed && styles.pressed,
                   ]}
                 >
-                  {isSubmittingReview ? (
-                    <ActivityIndicator size="small" color={COLORS.textOnAccent} />
-                  ) : (
-                    <>
-                      <CheckCircle size={18} color={COLORS.textOnAccent} />
-                      <Text style={styles.submitButtonText}>Simpan & Kirim Ulasan</Text>
-                    </>
-                  )}
+                  <View style={[styles.submitButtonSurface, isSubmittingReview && styles.buttonDisabled]}>
+                    {isSubmittingReview ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <>
+                        <CheckCircle size={18} color="#FFFFFF" />
+                        <Text style={styles.submitButtonText}>Simpan & Kirim Ulasan</Text>
+                      </>
+                    )}
+                  </View>
                 </Pressable>
               </View>
             ) : null}
@@ -634,20 +635,20 @@ export default function OutletsAndReviewsScreen() {
             onPress={handleSubmitReview}
             disabled={isSubmittingReview}
             style={({ pressed }) => [
-              styles.submitButton,
-              styles.stickySubmitButton,
-              isSubmittingReview && styles.buttonDisabled,
+              styles.submitButtonTouch,
               pressed && styles.pressed,
             ]}
           >
-            {isSubmittingReview ? (
-              <ActivityIndicator size="small" color={COLORS.textOnAccent} />
-            ) : (
-              <>
-                <CheckCircle size={18} color={COLORS.textOnAccent} />
-                <Text style={styles.submitButtonText}>Simpan & Kirim Ulasan</Text>
-              </>
-            )}
+            <View style={[styles.submitButtonSurface, isSubmittingReview && styles.buttonDisabled]}>
+              {isSubmittingReview ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <CheckCircle size={18} color="#FFFFFF" />
+                  <Text style={styles.submitButtonText}>Simpan & Kirim Ulasan</Text>
+                </>
+              )}
+            </View>
           </Pressable>
         </View>
       ) : null}
@@ -1038,28 +1039,32 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     minHeight: 85,
   },
-  submitButton: {
+  submitButtonTouch: {
+    width: "100%",
+  },
+  submitButtonSurface: {
+    width: "100%",
+    minHeight: 52,
+    backgroundColor: "#2476BC",
+    borderRadius: 14,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: COLORS.brandBlue,
-    borderRadius: RADIUS.button,
-    minHeight: 48,
-    marginTop: SPACING.base,
     gap: 8,
-    shadowColor: COLORS.brandBlueDark,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
+    paddingHorizontal: 16,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
     shadowRadius: 6,
-    elevation: 3,
+    elevation: 4,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   submitButtonText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "800",
-    color: COLORS.textOnAccent,
+    color: "#FFFFFF",
     letterSpacing: 0.3,
   },
   stickyFooterBar: {

@@ -133,14 +133,15 @@ export default function AuthScreen() {
             disabled={isSubmitting}
             onPress={handleSubmit}
             style={({ pressed }) => [
-              styles.submitButton,
+              styles.submitButtonTouch,
               pressed && styles.pressed,
-              isSubmitting && styles.disabled,
             ]}
           >
-            <Text style={styles.submitButtonText}>
-              {isSubmitting ? "Memproses..." : "Masuk ke Akun"}
-            </Text>
+            <View style={[styles.submitButtonSurface, isSubmitting && styles.disabled]}>
+              <Text style={styles.submitButtonText}>
+                {isSubmitting ? "Memproses..." : "Masuk ke Akun"}
+              </Text>
+            </View>
           </Pressable>
 
           {/* Tombol Lanjut Mode Demo / Tamu */}
@@ -204,15 +205,18 @@ const styles = StyleSheet.create({
     minHeight: 52,
     paddingHorizontal: SPACING.base,
   },
-  submitButton: {
+  submitButtonTouch: {
     width: "100%",
     alignSelf: "stretch",
+    marginTop: 24,
+  },
+  submitButtonSurface: {
+    width: "100%",
     minHeight: 52,
-    backgroundColor: "#3998E5",
+    backgroundColor: "#2476BC",
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 24,
     paddingVertical: 14,
     shadowColor: "#2476BC",
     shadowOffset: { width: 0, height: 4 },
