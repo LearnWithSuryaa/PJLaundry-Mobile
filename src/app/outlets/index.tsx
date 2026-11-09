@@ -240,6 +240,7 @@ export default function OutletsAndReviewsScreen() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -494,10 +495,10 @@ export default function OutletsAndReviewsScreen() {
                   textAlignVertical="top"
                 />
 
-                {/* Tombol Kirim Ulasan */}
+                {/* Tombol Simpan Ulasan */}
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Kirim ulasan ke API server"
+                  accessibilityLabel="Simpan dan kirim ulasan ke API server"
                   onPress={handleSubmitReview}
                   disabled={isSubmittingReview}
                   style={({ pressed }) => [
@@ -510,8 +511,8 @@ export default function OutletsAndReviewsScreen() {
                     <ActivityIndicator size="small" color={COLORS.textOnAccent} />
                   ) : (
                     <>
-                      <Send size={16} color={COLORS.textOnAccent} />
-                      <Text style={styles.submitButtonText}>Kirim Ulasan ke Server</Text>
+                      <CheckCircle size={18} color={COLORS.textOnAccent} />
+                      <Text style={styles.submitButtonText}>Simpan & Kirim Ulasan</Text>
                     </>
                   )}
                 </Pressable>
@@ -938,17 +939,23 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: COLORS.brandBlue,
     borderRadius: RADIUS.button,
-    paddingVertical: 12,
+    minHeight: 48,
     marginTop: SPACING.base,
     gap: 8,
+    shadowColor: COLORS.brandBlueDark,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 3,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   submitButtonText: {
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: 14,
+    fontWeight: "800",
     color: COLORS.textOnAccent,
+    letterSpacing: 0.3,
   },
   pressed: {
     opacity: 0.7,
