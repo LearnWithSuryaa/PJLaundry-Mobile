@@ -219,7 +219,7 @@ export default function OutletsAndReviewsScreen() {
   }, [reviews]);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.safeArea} edges={["top", "bottom", "left", "right"]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="dark" />
 
@@ -250,7 +250,10 @@ export default function OutletsAndReviewsScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          activeTab === "reviews" && styles.scrollContentReviews,
+        ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         refreshControl={
@@ -621,6 +624,33 @@ export default function OutletsAndReviewsScreen() {
           </View>
         ) : null}
       </ScrollView>
+
+      {/* STICKY FOOTER: Tombol Simpan Selalu Terlihat di Bagian Bawah Layar iPhone/Android */}
+      {!loading && activeTab === "reviews" ? (
+        <View style={styles.stickyFooterBar}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Simpan dan kirim ulasan ke API server"
+            onPress={handleSubmitReview}
+            disabled={isSubmittingReview}
+            style={({ pressed }) => [
+              styles.submitButton,
+              styles.stickySubmitButton,
+              isSubmittingReview && styles.buttonDisabled,
+              pressed && styles.pressed,
+            ]}
+          >
+            {isSubmittingReview ? (
+              <ActivityIndicator size="small" color={COLORS.textOnAccent} />
+            ) : (
+              <>
+                <CheckCircle size={18} color={COLORS.textOnAccent} />
+                <Text style={styles.submitButtonText}>Simpan & Kirim Ulasan</Text>
+              </>
+            )}
+          </Pressable>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -665,6 +695,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: SPACING.base,
     paddingBottom: 40,
+  },
+  scrollContentReviews: {
+    paddingBottom: 110,
   },
   tabContainer: {
     flexDirection: "row",
@@ -1028,6 +1061,22 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: COLORS.textOnAccent,
     letterSpacing: 0.3,
+  },
+  stickyFooterBar: {
+    backgroundColor: COLORS.surfacePrimary,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.borderDefault,
+    paddingHorizontal: SPACING.base,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.md,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  stickySubmitButton: {
+    marginTop: 0,
   },
   pressed: {
     opacity: 0.7,
