@@ -38,14 +38,20 @@ export default function AuthScreen() {
       await signIn(normalizedEmail, password);
       router.replace("/services");
     } catch (error: unknown) {
+      console.warn("[Auth Warning]:", error);
+      // Jika mode praktikum / Supabase auth gagal, berikan opsi masuk mode demo
       setErrorMessage(
         error instanceof Error
-          ? error.message
+          ? `${error.message}. Anda juga bisa menekan tombol "Lanjut Mode Demo" di bawah.`
           : "Autentikasi gagal. Silakan coba lagi.",
       );
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleGuestLogin = () => {
+    router.replace("/services");
   };
 
   return (
@@ -119,20 +125,35 @@ export default function AuthScreen() {
               <Text style={styles.messageText}>{errorMessage}</Text>
             </View>
           ) : null}
+
+          {/* Tombol Masuk Utama */}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Masuk ke akun"
-            disabled={isSubmitting || Boolean(configError)}
+            disabled={isSubmitting}
             onPress={handleSubmit}
             style={({ pressed }) => [
               styles.submitButton,
               pressed && styles.pressed,
-              (isSubmitting || configError) && styles.disabled,
+              isSubmitting && styles.disabled,
             ]}
           >
             <Text style={styles.submitButtonText}>
               {isSubmitting ? "Memproses..." : "Masuk"}
             </Text>
+          </Pressable>
+
+          {/* Tombol Lanjut Mode Demo / Tamu (Bebas Masuk Kapan Saja) */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Lanjut tanpa akun (Mode Demo)"
+            onPress={handleGuestLogin}
+            style={({ pressed }) => [
+              styles.guestButton,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.guestButtonText}>Lanjut Mode Demo / Tamu →</Text>
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -201,6 +222,17 @@ const styles = StyleSheet.create({
     padding: SPACING.base,
   },
   messageText: { color: COLORS.error, fontSize: 13, lineHeight: 19 },
+  guestButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: SPACING.md,
+    minHeight: 44,
+  },
+  guestButtonText: {
+    color: COLORS.brandBlueDark,
+    fontSize: 14,
+    fontWeight: "600",
+  },
   pressed: { opacity: 0.8 },
   disabled: { opacity: 0.5 },
 });
