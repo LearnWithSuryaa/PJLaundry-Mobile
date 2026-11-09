@@ -63,23 +63,34 @@ export default function OnboardingScreen() {
         <View style={styles.header}>
           <BrandLogo size={34} subtitle="Solusi Laundry Modern" />
 
-          {!isLastStep ? (
+          <View style={styles.headerActions}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Lewati pengenalan dan langsung ke katalog layanan"
-              onPress={handleSkip}
+              accessibilityLabel="Masuk atau daftar akun PJLaundry"
+              onPress={() => router.push("/auth")}
               style={({ pressed }) => [
-                styles.skipTouchTarget,
+                styles.loginTouchTarget,
                 pressed && styles.pressed,
               ]}
             >
-              <View style={styles.skipButtonSurface}>
-                <Text style={styles.skipText}>Lewati</Text>
-              </View>
+              <Text style={styles.loginText}>Masuk</Text>
             </Pressable>
-          ) : (
-            <View style={styles.skipPlaceholder} />
-          )}
+            {!isLastStep ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Lewati pengenalan dan langsung ke katalog layanan"
+                onPress={handleSkip}
+                style={({ pressed }) => [
+                  styles.skipTouchTarget,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <View style={styles.skipButtonSurface}>
+                  <Text style={styles.skipText}>Lewati</Text>
+                </View>
+              </Pressable>
+            ) : null}
+          </View>
         </View>
 
         {/* Scrollable Center Content */}
@@ -134,6 +145,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 6,
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  loginTouchTarget: {
+    minWidth: TOUCH_TARGET.min,
+    minHeight: TOUCH_TARGET.min,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loginText: {
+    color: COLORS.brandBlueDark,
+    fontSize: 13,
+    fontWeight: "700",
   },
   skipTouchTarget: {
     minWidth: TOUCH_TARGET.min,

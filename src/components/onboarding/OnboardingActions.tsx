@@ -47,57 +47,55 @@ export default function OnboardingActions({
 
   return (
     <View style={styles.dualButtonContainer}>
-      {/* Back button container */}
-      <View style={styles.backButtonWrapper}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Kembali ke langkah sebelumnya"
-          onPress={onBack}
-          style={({ pressed }) => [
-            styles.fullSizeTouch,
-            pressed && styles.secondaryPressed,
-          ]}
-        >
-          {({ pressed }) => (
-            <View
-              style={[
-                styles.backButtonSurface,
-                pressed && styles.backButtonSurfacePressed,
-              ]}
-            >
-              <ArrowLeft size={22} color={COLORS.textPrimary} />
-            </View>
-          )}
-        </Pressable>
-      </View>
+        <View style={styles.backButtonWrapper}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Kembali ke langkah sebelumnya"
+            onPress={onBack}
+            style={({ pressed }) => [
+              styles.fullSizeTouch,
+              pressed && styles.secondaryPressed,
+            ]}
+          >
+            {({ pressed }) => (
+              <View
+                style={[
+                  styles.backButtonSurface,
+                  pressed && styles.backButtonSurfacePressed,
+                ]}
+              >
+                <ArrowLeft size={22} color={COLORS.textPrimary} />
+              </View>
+            )}
+          </Pressable>
+        </View>
 
-      {/* Primary Continue button */}
-      <View style={styles.continueButtonWrapper}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={
-            isLastStep
-              ? "Mulai menggunakan PJLaundry dan lihat katalog layanan"
-              : "Lanjut ke langkah pengenalan berikutnya"
-          }
-          onPress={onContinue}
-          style={({ pressed }) => [
-            styles.fullSizeTouch,
-            pressed && styles.primaryPressed,
-          ]}
-        >
-          {({ pressed }) => (
-            <View
-              style={[
-                styles.continueSurface,
-                pressed && styles.continueSurfacePressed,
-              ]}
-            >
-              <Text style={styles.continueText}>{continueLabel}</Text>
-            </View>
-          )}
-        </Pressable>
-      </View>
+        <View style={styles.continueButtonWrapper}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              isLastStep
+                ? "Mulai menggunakan PJLaundry dan lihat katalog layanan"
+                : "Lanjut ke langkah pengenalan berikutnya"
+            }
+            onPress={onContinue}
+            style={({ pressed }) => [
+              styles.fullSizeTouch,
+              pressed && styles.primaryPressed,
+            ]}
+          >
+            {({ pressed }) => (
+              <View
+                style={[
+                  styles.continueSurface,
+                  pressed && styles.continueSurfacePressed,
+                ]}
+              >
+                <Text style={styles.continueText}>{continueLabel}</Text>
+              </View>
+            )}
+          </Pressable>
+        </View>
     </View>
   );
 }
