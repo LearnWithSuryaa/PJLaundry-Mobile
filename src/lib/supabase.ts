@@ -2,13 +2,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
 import { Platform } from "react-native";
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
-
-export const supabaseConfigError =
-  !supabaseUrl || !supabaseAnonKey
-    ? "Konfigurasi Supabase belum lengkap. Isi EXPO_PUBLIC_SUPABASE_URL dan EXPO_PUBLIC_SUPABASE_ANON_KEY."
-    : null;
+// Bersihkan URL dari spasi atau format markdown jika ada
+const rawUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim();
+const cleanUrl = rawUrl?.split(" ")[0]?.trim();
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
 const serverStorage = {
   getItem: async () => null,
@@ -23,14 +20,29 @@ const authStorage =
       ? window.localStorage
       : AsyncStorage;
 
-export const supabase =
-  supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey, {
-        auth: {
-          storage: authStorage,
-          autoRefreshToken: true,
-          persistSession: true,
-          detectSessionInUrl: false,
-        },
-      })
-    : null;
+function initSupabase() {
+  if (!cleanUrl || !supabaseAnonKey) {
+    return null;
+  }
+  try {
+    // Validasi URL
+    new URL(cleanUrl);
+    return createClient(cleanUrl, supabaseAnonKey, {
+      auth: {
+        storage: authStorage,
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: false,
+      },
+    });
+  } catch (error) {
+    console.warn("[Supabase Init Warning]: URL tidak valid, mode offline/mock aktif:", error);
+    return null;
+  }
+}
+
+export const supabase = initSupabase();
+
+export const supabaseConfigError = !supabase
+  ? "Konfigurasi Supabase belum lengkap atau URL tidak valid. Fitur auth dijalankan dalam mode terbatas."
+  : null;
