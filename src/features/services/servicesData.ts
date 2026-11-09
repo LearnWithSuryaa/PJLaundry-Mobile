@@ -273,3 +273,37 @@ export const getUpcomingPickupDates = (): PickupDateOption[] => {
     createOption(2, "day_after", "Lusa"),
   ];
 };
+
+export type DetergentOption = {
+  id: string;
+  name: string;
+  description: string;
+  extraPrice: number;
+};
+
+export const DETERGENT_OPTIONS: DetergentOption[] = [
+  {
+    id: "regular",
+    name: "Reguler Floral Fresh",
+    description: "Wangi bunga segar harian, bersih dan lembut",
+    extraPrice: 0,
+  },
+  {
+    id: "lavender",
+    name: "Lavender Relaxing",
+    description: "Aroma lavender menenangkan, tahan hingga 7 hari",
+    extraPrice: 3000,
+  },
+  {
+    id: "sensitive",
+    name: "Sensitive Skin / Baby",
+    description: "Bebas alergen, tanpa pewarna keras, lembut untuk bayi",
+    extraPrice: 5000,
+  },
+  {
+    id: "extra",
+    name: "Extra Wangi & Anti-Bakteri",
+    description: "Double konsentrat pewangi dengan proteksi kuman",
+    extraPrice: 4000,
+  },
+];

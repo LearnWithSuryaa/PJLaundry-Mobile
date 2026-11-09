@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { ArrowLeft } from "lucide-react-native";
+import { ArrowLeft, Building2 } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import BrandLogo from "../common/BrandLogo";
@@ -36,7 +36,19 @@ export default function ServiceHeader() {
         <BrandLogo size={28} subtitle="Katalog Layanan Resmi" />
       </View>
 
-      <View style={styles.headerRightPlaceholder} />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Buka daftar cabang outlet dan ulasan pelanggan"
+        onPress={() => router.push("/outlets" as any)}
+        style={({ pressed }) => [
+          styles.touchTarget,
+          pressed && styles.pressed,
+        ]}
+      >
+        <View style={styles.outletButtonSurface}>
+          <Building2 size={18} color={COLORS.brandBlueDark} />
+        </View>
+      </Pressable>
     </View>
   );
 }
@@ -68,6 +80,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 1,
     borderColor: COLORS.borderDefault,
+  },
+  outletButtonSurface: {
+    width: 44,
+    height: 44,
+    borderRadius: RADIUS.input,
+    backgroundColor: COLORS.brandBlueSoft,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: COLORS.brandBlue,
   },
   brandContainer: {
     alignItems: "center",
