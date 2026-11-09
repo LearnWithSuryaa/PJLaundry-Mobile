@@ -139,11 +139,11 @@ export default function AuthScreen() {
             ]}
           >
             <Text style={styles.submitButtonText}>
-              {isSubmitting ? "Memproses..." : "Masuk"}
+              {isSubmitting ? "Memproses..." : "Masuk ke Akun"}
             </Text>
           </Pressable>
 
-          {/* Tombol Lanjut Mode Demo / Tamu (Bebas Masuk Kapan Saja) */}
+          {/* Tombol Lanjut Mode Demo / Tamu */}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Lanjut tanpa akun (Mode Demo)"
@@ -153,7 +153,9 @@ export default function AuthScreen() {
               pressed && styles.pressed,
             ]}
           >
-            <Text style={styles.guestButtonText}>Lanjut Mode Demo / Tamu →</Text>
+            <View style={styles.guestButtonSurface}>
+              <Text style={styles.guestButtonText}>Lanjut Mode Demo / Tamu (Lewati) →</Text>
+            </View>
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -203,17 +205,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.base,
   },
   submitButton: {
-    alignItems: "center",
-    backgroundColor: COLORS.brandBlue,
-    borderRadius: RADIUS.button,
-    justifyContent: "center",
-    marginTop: SPACING.xl,
+    width: "100%",
+    alignSelf: "stretch",
     minHeight: 52,
+    backgroundColor: "#3998E5",
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 24,
+    paddingVertical: 14,
+    shadowColor: "#2476BC",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   submitButtonText: {
-    color: COLORS.textOnAccent,
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "700",
+    letterSpacing: 0.3,
   },
   messageError: {
     backgroundColor: COLORS.errorSurface,
@@ -223,15 +234,21 @@ const styles = StyleSheet.create({
   },
   messageText: { color: COLORS.error, fontSize: 13, lineHeight: 19 },
   guestButton: {
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: SPACING.md,
-    minHeight: 44,
+    marginTop: 14,
+  },
+  guestButtonSurface: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    backgroundColor: "#EAF5FF",
   },
   guestButtonText: {
-    color: COLORS.brandBlueDark,
+    color: "#2476BC",
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   pressed: { opacity: 0.8 },
   disabled: { opacity: 0.5 },
