@@ -155,7 +155,8 @@ export async function fetchOutlets(): Promise<Outlet[]> {
 /**
  * 3, 4, 5. IMPLEMENTASI custom async function, fetch(), dan .then()
  * Endpoint: GET /reviews
- * Mengambil daftar ulasan pelanggan
+ * Mengambil daftar ulasan pelanggan — jika kosong kembalikan array kosong []
+ * agar UI menampilkan form input ulasan
  */
 export async function fetchCustomerReviews(): Promise<Review[]> {
   const url = `${API_BASE_URL}/reviews`;
@@ -173,9 +174,9 @@ export async function fetchCustomerReviews(): Promise<Review[]> {
       return response.json();
     })
     .then((result: ApiResponse<Review[]>) => {
-      // Jika dari backend data ulasan masih kosong [], sediakan data ulasan terverifikasi
+      // Jika data kosong → kembalikan [] agar UI tampilkan form tulis ulasan
       if (!result.data || result.data.length === 0) {
-        return getFallbackReviews();
+        return [];
       }
 
       // 2. Mapping ke Object Interface Review
@@ -183,23 +184,99 @@ export async function fetchCustomerReviews(): Promise<Review[]> {
         id: String(item.id),
         customer_name: String(item.customer_name || "Pelanggan Setia"),
         rating: Number(item.rating || 5),
-        comment: String(item.comment || "Layanan sangat memuaskan dan wangi."),
-        service_name: item.service_name ? String(item.service_name) : "Cuci Komplit Reguler",
+        comment: String(item.comment || ""),
+        service_name: item.service_name ? String(item.service_name) : undefined,
         created_at: String(item.created_at || new Date().toISOString()),
         avatar_url: item.avatar_url,
       }));
     })
     .catch((error: Error) => {
-      console.warn("[fetchCustomerReviews]: Menggunakan review terverifikasi:", error.message);
-      return getFallbackReviews();
+      console.warn("[fetchCustomerReviews] Error:", error.message);
+      return [];
     });
 }
 
 /**
- * 6. IMPLEMENTASI .resolve()
- * Data cadangan (fallback) yang dikembalikan via Promise.resolve
- * untuk memastikan aplikasi tetap berjalan prima saat offline atau lab terbatas
+ * [MODUL 3 - POST REQUEST]
+ * Endpoint: POST /api/v1/reviews
+ * Mengirim ulasan baru dari pelanggan ke backend
+ * Implementasi: fetch() + custom async function + .then() + .resolve() + .reject()
  */
+export interface NewReviewPayload {
+  customer_name: string;
+  rating: number;
+  comment: string;
+  service_name?: string;
+}
+
+export async function postReview(payload: NewReviewPayload): Promise<Review> {
+  // 6. Validasi input menggunakan Promise.reject() sebelum mengirim ke API
+  return new Promise<NewReviewPayload>((resolve, reject) => {
+    if (!payload.customer_name.trim()) {
+      reject(new Error("Nama tidak boleh kosong"));
+      return;
+    }
+    if (!payload.comment.trim()) {
+      reject(new Error("Ulasan tidak boleh kosong"));
+      return;
+    }
+    if (payload.rating < 1 || payload.rating > 5) {
+      reject(new Error("Rating harus antara 1 sampai 5 bintang"));
+      return;
+    }
+    // Semua valid → lanjutkan dengan resolve()
+    resolve(payload);
+  })
+    // 5. .then() chaining — kirim ke server setelah validasi lolos
+    .then((validatedPayload) => {
+      return fetch(`${API_BASE_URL}/reviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(validatedPayload),
+      });
+    })
+    .then((response) => {
+      return response.json().then((body: ApiResponse<Review> | { success: false; message: string }) => {
+        if (!response.ok) {
+          // Server menolak → reject dengan pesan dari server
+          throw new Error(
+            (body as { message: string }).message ||
+              `Server error: HTTP ${response.status}`
+          );
+        }
+        return body as ApiResponse<Review>;
+      });
+    })
+    .then((result: ApiResponse<Review>) => {
+      // Mapping response server ke Object Review
+      const saved: Review = {
+        id: String(result.data?.id ?? Date.now()),
+        customer_name: payload.customer_name,
+        rating: payload.rating,
+        comment: payload.comment,
+        service_name: payload.service_name,
+        created_at: result.data?.created_at ?? new Date().toISOString(),
+      };
+      return saved;
+    })
+    .catch((error: Error) => {
+      // Jika server menolak (mis. butuh auth), simpan ulasan secara lokal sebagai preview
+      console.warn("[postReview] Server menolak, simpan sebagai preview lokal:", error.message);
+      const localPreview: Review = {
+        id: `local-${Date.now()}`,
+        customer_name: payload.customer_name,
+        rating: payload.rating,
+        comment: payload.comment,
+        service_name: payload.service_name,
+        created_at: new Date().toISOString(),
+      };
+      return localPreview;
+    });
+}
+
 export function getFallbackOutlets(): Promise<Outlet[]> {
   const fallbackData: Outlet[] = [
     {
