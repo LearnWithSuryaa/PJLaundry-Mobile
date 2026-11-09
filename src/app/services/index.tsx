@@ -176,53 +176,26 @@ export default function ServicesCatalogScreen() {
           ) : null}
 
           {/* Banner Menuju Fitur Outlet & Review (Modul 3 - Anggota 2) */}
-          <View style={styles.outletBannerCard}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Cabang Outlet dan Ulasan Pelanggan"
+            onPress={() => router.push("/outlets" as any)}
+            style={({ pressed }) => [
+              styles.outletBannerCard,
+              pressed && styles.pressed,
+            ]}
+          >
             <View style={styles.outletBannerLeft}>
               <View style={styles.outletIconCircle}>
-                <Building2 size={20} color={COLORS.brandBlueDark} />
+                <Building2 size={22} color={COLORS.brandBlueDark} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.outletBannerTitle}>Cabang Outlet & Ulasan</Text>
                 <Text style={styles.outletBannerSubtitle}>Cek cabang terdekat & bagikan pengalaman Anda</Text>
               </View>
+              <ChevronRight size={20} color={COLORS.brandBlueDark} />
             </View>
-
-            {/* Quick Actions: Cabang & Tulis Ulasan */}
-            <View style={styles.outletBannerActions}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Lihat daftar cabang outlet"
-                onPress={() => router.push("/outlets" as any)}
-                style={({ pressed }) => [
-                  styles.outletActionBtn,
-                  styles.outletBtnOutline,
-                  pressed && styles.pressed,
-                ]}
-              >
-                <MapPin size={14} color={COLORS.brandBlueDark} />
-                <Text style={styles.outletBtnOutlineText}>Lihat Cabang</Text>
-              </Pressable>
-
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Tulis ulasan pengalaman pelanggan"
-                onPress={() =>
-                  router.push({
-                    pathname: "/outlets",
-                    params: { tab: "reviews" },
-                  } as any)
-                }
-                style={({ pressed }) => [
-                  styles.outletActionBtn,
-                  styles.outletBtnPrimary,
-                  pressed && styles.pressed,
-                ]}
-              >
-                <PenLine size={14} color={COLORS.textOnAccent} />
-                <Text style={styles.outletBtnPrimaryText}>Tulis Ulasan</Text>
-              </Pressable>
-            </View>
-          </View>
+          </Pressable>
 
           {isLoadingCatalog ? (
             <View style={styles.statusState}>

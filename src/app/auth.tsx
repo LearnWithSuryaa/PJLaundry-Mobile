@@ -4,11 +4,11 @@ import { StatusBar } from "expo-status-bar";
 import {
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -39,10 +39,9 @@ export default function AuthScreen() {
       router.replace("/services");
     } catch (error: unknown) {
       console.warn("[Auth Warning]:", error);
-      // Jika mode praktikum / Supabase auth gagal, berikan opsi masuk mode demo
       setErrorMessage(
         error instanceof Error
-          ? `${error.message}. Anda juga bisa menekan tombol "Lanjut Mode Demo" di bawah.`
+          ? `${error.message}. Atau tekan tombol "Lanjut Mode Demo" di bawah.`
           : "Autentikasi gagal. Silakan coba lagi.",
       );
     } finally {
@@ -66,14 +65,14 @@ export default function AuthScreen() {
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
-          <Pressable
+          <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel="Kembali ke katalog layanan"
             onPress={() => router.back()}
             style={styles.backButton}
           >
-            <Text style={styles.backButtonText}>Kembali</Text>
-          </Pressable>
+            <Text style={styles.backButtonText}>← Kembali</Text>
+          </TouchableOpacity>
 
           <View style={styles.heading}>
             <Text style={styles.eyebrow}>PJLaundry</Text>
@@ -126,38 +125,30 @@ export default function AuthScreen() {
             </View>
           ) : null}
 
-          {/* Tombol Masuk Utama */}
-          <Pressable
+          {/* Tombol Masuk Utama - Menggunakan TouchableOpacity Solid dengan background tegas */}
+          <TouchableOpacity
+            activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Masuk ke akun"
             disabled={isSubmitting}
             onPress={handleSubmit}
-            style={({ pressed }) => [
-              styles.submitButtonTouch,
-              pressed && styles.pressed,
-            ]}
+            style={[styles.mainButton, isSubmitting && styles.disabled]}
           >
-            <View style={[styles.submitButtonSurface, isSubmitting && styles.disabled]}>
-              <Text style={styles.submitButtonText}>
-                {isSubmitting ? "Memproses..." : "Masuk ke Akun"}
-              </Text>
-            </View>
-          </Pressable>
+            <Text style={styles.mainButtonText}>
+              {isSubmitting ? "Memproses..." : "Masuk ke Akun"}
+            </Text>
+          </TouchableOpacity>
 
           {/* Tombol Lanjut Mode Demo / Tamu */}
-          <Pressable
+          <TouchableOpacity
+            activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel="Lanjut tanpa akun (Mode Demo)"
             onPress={handleGuestLogin}
-            style={({ pressed }) => [
-              styles.guestButton,
-              pressed && styles.pressed,
-            ]}
+            style={styles.guestButton}
           >
-            <View style={styles.guestButtonSurface}>
-              <Text style={styles.guestButtonText}>Lanjut Mode Demo / Tamu (Lewati) →</Text>
-            </View>
-          </Pressable>
+            <Text style={styles.guestButtonText}>Lanjut Mode Demo / Tamu (Lewati) →</Text>
+          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -165,7 +156,7 @@ export default function AuthScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.bgPrimary },
+  safeArea: { flex: 1, backgroundColor: "#F8FAFC" },
   container: { flex: 1 },
   content: {
     flexGrow: 1,
@@ -176,84 +167,84 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     minHeight: TOUCH_TARGET.min,
     justifyContent: "center",
+    marginBottom: SPACING.md,
   },
-  backButtonText: { color: COLORS.textSecondary, fontSize: 14, fontWeight: "600" },
+  backButtonText: { color: "#0284C7", fontSize: 15, fontWeight: "700" },
   heading: { marginBottom: SPACING.xl },
   eyebrow: {
-    color: COLORS.brandBlueDark,
+    color: "#0284C7",
     fontSize: 14,
     fontWeight: "700",
     marginBottom: SPACING.sm,
   },
-  title: { color: COLORS.textPrimary, fontSize: 28, fontWeight: "700" },
+  title: { color: "#0F172A", fontSize: 28, fontWeight: "800" },
   subtitle: {
-    color: COLORS.textSecondary,
+    color: "#475569",
     fontSize: 15,
     lineHeight: 22,
     marginTop: SPACING.sm,
   },
   form: { gap: SPACING.base },
   field: { gap: SPACING.sm },
-  label: { color: COLORS.textPrimary, fontSize: 14, fontWeight: "600" },
+  label: { color: "#0F172A", fontSize: 14, fontWeight: "600" },
   input: {
-    backgroundColor: COLORS.surfacePrimary,
-    borderColor: COLORS.borderDefault,
-    borderRadius: RADIUS.input,
-    borderWidth: 1,
-    color: COLORS.textPrimary,
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+    borderRadius: 12,
+    borderWidth: 1.5,
+    color: "#0F172A",
     fontSize: 16,
     minHeight: 52,
     paddingHorizontal: SPACING.base,
   },
-  submitButtonTouch: {
-    width: "100%",
-    alignSelf: "stretch",
-    marginTop: 24,
-  },
-  submitButtonSurface: {
+  mainButton: {
     width: "100%",
     minHeight: 52,
-    backgroundColor: "#2476BC",
-    borderRadius: 14,
+    backgroundColor: "#0284C7",
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
+    marginTop: 24,
     paddingVertical: 14,
-    shadowColor: "#2476BC",
+    borderWidth: 1,
+    borderColor: "#0369A1",
+    shadowColor: "#0284C7",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: 6,
     elevation: 4,
   },
-  submitButtonText: {
+  mainButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 0.3,
+    fontWeight: "800",
+    textAlign: "center",
   },
   messageError: {
-    backgroundColor: COLORS.errorSurface,
-    borderRadius: RADIUS.input,
+    backgroundColor: "#FEE2E2",
+    borderColor: "#EF4444",
+    borderWidth: 1,
+    borderRadius: 10,
     marginTop: SPACING.base,
     padding: SPACING.base,
   },
-  messageText: { color: COLORS.error, fontSize: 13, lineHeight: 19 },
+  messageText: { color: "#DC2626", fontSize: 13, lineHeight: 19 },
   guestButton: {
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 14,
-  },
-  guestButtonSurface: {
-    paddingVertical: 10,
+    marginTop: 16,
+    paddingVertical: 12,
     paddingHorizontal: 16,
+    backgroundColor: "#E0F2FE",
     borderRadius: 10,
-    backgroundColor: "#EAF5FF",
+    borderWidth: 1,
+    borderColor: "#BAE6FD",
   },
   guestButtonText: {
-    color: "#2476BC",
+    color: "#0369A1",
     fontSize: 14,
     fontWeight: "700",
   },
-  pressed: { opacity: 0.8 },
-  disabled: { opacity: 0.5 },
+  disabled: { opacity: 0.6 },
 });
