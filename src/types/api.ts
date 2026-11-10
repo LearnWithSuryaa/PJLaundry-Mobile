@@ -17,6 +17,8 @@ export interface ApiResponse<T> {
   };
 }
 
+
+
 // Interface Outlet (Endpoint: GET /api/v1/outlets)
 export interface Outlet {
   id: string;

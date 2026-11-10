@@ -147,8 +147,8 @@ export async function fetchOutlets(): Promise<Outlet[]> {
     return outletsList;
   } catch (error) {
     console.warn("[fetchOutlets]: Menggunakan data cadangan karena kendala jaringan:", error);
-    // Fallback data lokal jika jaringan bermasalah saat pengujian
-    return getFallbackOutlets();
+    // Lemparkan error agar layar dapat menampilkan banner pesan error & tombol Coba Lagi
+    throw error;
   }
 }
 

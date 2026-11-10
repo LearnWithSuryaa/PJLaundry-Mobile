@@ -318,17 +318,37 @@ export default function OutletsAndReviewsScreen() {
           </View>
         ) : null}
 
-        {/* Error Message */}
+        {/* Error Message & Retry Button */}
         {errorMessage && !loading ? (
           <View style={styles.errorBox}>
-            <Text style={styles.errorTitle}>Gagal Mengambil Data</Text>
+            <View style={styles.errorHeaderRow}>
+              <X size={18} color={COLORS.error} />
+              <Text style={styles.errorTitle}>Gagal Mengambil Data dari Server</Text>
+            </View>
             <Text style={styles.errorDescription}>{errorMessage}</Text>
-            <Pressable
-              style={styles.retryButton}
-              onPress={() => loadAllData()}
-            >
-              <Text style={styles.retryButtonText}>Coba Lagi</Text>
-            </Pressable>
+            
+            <View style={styles.errorActionsRow}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.retryButton}
+                onPress={() => loadAllData()}
+              >
+                <RefreshCw size={14} color="#FFFFFF" />
+                <Text style={styles.retryButtonText}>Coba Lagi</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.fallbackButton}
+                onPress={async () => {
+                  const fallback = await import("../../services/outletReviewService").then(m => m.getFallbackOutlets());
+                  setOutlets(fallback);
+                  setErrorMessage(null);
+                }}
+              >
+                <Text style={styles.fallbackButtonText}>Gunakan Data Cadangan</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : null}
 
@@ -784,34 +804,60 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
   errorBox: {
-    backgroundColor: COLORS.errorSurface,
+    backgroundColor: "#FEE2E2",
     padding: SPACING.base,
     borderRadius: RADIUS.card,
-    borderWidth: 1,
-    borderColor: COLORS.error,
+    borderWidth: 1.5,
+    borderColor: "#EF4444",
     marginBottom: SPACING.base,
+  },
+  errorHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
   },
   errorTitle: {
     fontSize: 14,
     fontWeight: "700",
-    color: COLORS.error,
+    color: "#DC2626",
   },
   errorDescription: {
     fontSize: 12,
-    color: COLORS.textPrimary,
-    marginTop: 4,
+    color: "#7F1D1D",
+    marginTop: 2,
     lineHeight: 18,
   },
+  errorActionsRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 12,
+    alignItems: "center",
+  },
   retryButton: {
-    backgroundColor: COLORS.error,
-    alignSelf: "flex-start",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: RADIUS.button,
-    marginTop: 10,
+    backgroundColor: "#DC2626",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 6,
   },
   retryButtonText: {
-    color: COLORS.textOnAccent,
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  fallbackButton: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#DC2626",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  fallbackButtonText: {
+    color: "#DC2626",
     fontSize: 12,
     fontWeight: "600",
   },
