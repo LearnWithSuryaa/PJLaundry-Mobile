@@ -1,5 +1,5 @@
 import { Stack, useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   Pressable,
@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-import PickupScheduleModal from "../../components/services/PickupScheduleModal";
 import ServiceBottomBar from "../../components/services/ServiceBottomBar";
 import ServiceCard from "../../components/services/ServiceCard";
 import ServiceHeader from "../../components/services/ServiceHeader";
@@ -21,10 +20,11 @@ import type {
   ServiceCategory,
 } from "../../features/services/servicesData";
 import {
-  getUpcomingPickupDates,
-  SERVICES,
-} from "../../features/services/servicesData";
-import { COLORS, RADIUS, SHADOWS, SPACING, TOUCH_TARGET } from "../../theme/tokens";
+  getPromos,
+  getServices,
+  type LaundryPromo,
+} from "../../features/services/servicesApi";
+import { COLORS, LAYOUT, RADIUS, SHADOWS, SPACING, TOUCH_TARGET } from "../../theme/tokens";
 
 export default function ServicesCatalogScreen() {
   const router = useRouter();
@@ -40,16 +40,41 @@ export default function ServicesCatalogScreen() {
     "kiloan-komplit"
   );
   const [quantity, setQuantity] = useState<number>(3);
+  const [services, setServices] = useState<LaundryService[]>([]);
+  const [promos, setPromos] = useState<LaundryPromo[]>([]);
+  const [isLoadingCatalog, setIsLoadingCatalog] = useState(true);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
 
-  // Modal & Booking State
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [orderConfirmed, setOrderConfirmed] = useState(false);
-  const [pickupAddress, setPickupAddress] = useState(
-    "Jl. Melati No. 18, Kebayoran Baru"
-  );
-  const [selectedDateId, setSelectedDateId] = useState<string>("today");
-  const [selectedSlotId, setSelectedSlotId] = useState<string>("pagi");
-  const [orderNotes, setOrderNotes] = useState("");
+
+  const loadCatalog = useCallback(() => {
+    setIsLoadingCatalog(true);
+    setCatalogError(null);
+
+    Promise.all([getServices(), getPromos()])
+      .then(([serviceData, promoData]) => {
+        setServices(serviceData);
+        setPromos(promoData.filter((promo) => promo.is_active));
+        setSelectedServiceId((currentId) =>
+          serviceData.some((service) => service.id === currentId)
+            ? currentId
+            : (serviceData[0]?.id ?? null),
+        );
+      })
+      .catch((error: unknown) => {
+        setCatalogError(
+          error instanceof Error
+            ? error.message
+            : "Katalog layanan tidak dapat dimuat.",
+        );
+      })
+      .finally(() => setIsLoadingCatalog(false));
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(loadCatalog, 0);
+
+    return () => clearTimeout(timer);
+  }, [loadCatalog]);
 
   // 2. useEffect: Log riwayat pencarian otomatis saat kata kunci berubah
   useEffect(() => {
@@ -58,15 +83,13 @@ export default function ServicesCatalogScreen() {
     }
   }, [searchQuery]);
 
-  const pickupDates = useMemo(() => getUpcomingPickupDates(), []);
-
   const selectedService = useMemo(
-    () => SERVICES.find((s) => s.id === selectedServiceId) ?? null,
-    [selectedServiceId]
+    () => services.find((s) => s.id === selectedServiceId) ?? null,
+    [selectedServiceId, services],
   );
 
   const filteredServices = useMemo(() => {
-    return SERVICES.filter((service) => {
+    return services.filter((service) => {
       const matchCategory =
         selectedCategoryId === "all" || service.category === selectedCategoryId;
       const query = searchQuery.trim().toLowerCase();
@@ -76,7 +99,7 @@ export default function ServicesCatalogScreen() {
         service.tagline.toLowerCase().includes(query);
       return matchCategory && matchSearch;
     });
-  }, [selectedCategoryId, searchQuery]);
+  }, [selectedCategoryId, searchQuery, services]);
 
   const handleSelectService = (service: LaundryService) => {
     if (selectedServiceId === service.id) return;
@@ -122,55 +145,102 @@ export default function ServicesCatalogScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <ServiceSearchFilter
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            selectedCategoryId={selectedCategoryId}
-            onSelectCategory={setSelectedCategoryId}
-          />
+          {promos.length > 0 ? (
+            <View style={styles.promoSection}>
+              <Text style={styles.promoHeading}>Promo yang tersedia</Text>
+              {promos.map((promo) => (
+                <View key={promo.id} style={styles.promoCard}>
+                  <Text style={styles.promoCode}>{promo.code}</Text>
+                  <Text style={styles.promoTitle}>{promo.title}</Text>
+                  <Text style={styles.promoDescription}>
+                    {promo.description}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
 
-          <View style={styles.servicesList}>
-            {filteredServices.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyTitle}>Layanan Tidak Ditemukan</Text>
-                <Text style={styles.emptySubtitle}>
-                  Tidak ada paket cucian yang cocok dengan kata kunci &quot;
-                  {searchQuery}&quot;. Coba gunakan kata kunci lain atau reset
-                  filter.
-                </Text>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Reset pencarian dan kategori"
-                  onPress={() => {
-                    setSearchQuery("");
-                    setSelectedCategoryId("all");
-                  }}
-                  style={({ pressed }) => [
-                    styles.resetButtonTouch,
-                    pressed && styles.pressed,
-                  ]}
-                >
-                  <View style={styles.resetButtonSurface}>
-                    <Text style={styles.resetButtonText}>Tampilkan Semua</Text>
+          {isLoadingCatalog ? (
+            <View style={styles.statusState}>
+              <Text style={styles.statusTitle}>Memuat katalog layanan...</Text>
+              <Text style={styles.statusSubtitle}>
+                Data layanan dan promo sedang diambil dari server.
+              </Text>
+            </View>
+          ) : catalogError ? (
+            <View style={styles.statusState}>
+              <Text style={styles.statusTitle}>Katalog belum tersedia</Text>
+              <Text style={styles.statusSubtitle}>{catalogError}</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Coba muat ulang katalog layanan"
+                onPress={loadCatalog}
+                style={({ pressed }) => [
+                  styles.retryButton,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Text style={styles.retryButtonText}>Coba Lagi</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <>
+              <ServiceSearchFilter
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                selectedCategoryId={selectedCategoryId}
+                onSelectCategory={setSelectedCategoryId}
+                services={services}
+              />
+
+              <View style={styles.servicesList}>
+                {filteredServices.length === 0 ? (
+                  <View style={styles.emptyState}>
+                    <Text style={styles.emptyTitle}>
+                      Layanan Tidak Ditemukan
+                    </Text>
+                    <Text style={styles.emptySubtitle}>
+                      Tidak ada paket cucian yang cocok dengan kata kunci
+                      &quot;{searchQuery}&quot;. Coba gunakan kata kunci lain
+                      atau reset filter.
+                    </Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Reset pencarian dan kategori"
+                      onPress={() => {
+                        setSearchQuery("");
+                        setSelectedCategoryId("all");
+                      }}
+                      style={({ pressed }) => [
+                        styles.resetButtonTouch,
+                        pressed && styles.pressed,
+                      ]}
+                    >
+                      <View style={styles.resetButtonSurface}>
+                        <Text style={styles.resetButtonText}>
+                          Tampilkan Semua
+                        </Text>
+                      </View>
+                    </Pressable>
                   </View>
-                </Pressable>
+                ) : (
+                  filteredServices.map((service) => (
+                    <ServiceCard
+                      key={service.id}
+                      service={service}
+                      isSelected={selectedServiceId === service.id}
+                      quantity={quantity}
+                      isNarrow={isNarrow}
+                      onSelect={handleSelectService}
+                      onDecreaseQuantity={handleDecreaseQuantity}
+                      onIncreaseQuantity={handleIncreaseQuantity}
+                      onViewDetail={handleViewDetail}
+                    />
+                  ))
+                )}
               </View>
-            ) : (
-              filteredServices.map((service) => (
-                <ServiceCard
-                  key={service.id}
-                  service={service}
-                  isSelected={selectedServiceId === service.id}
-                  quantity={quantity}
-                  isNarrow={isNarrow}
-                  onSelect={handleSelectService}
-                  onDecreaseQuantity={handleDecreaseQuantity}
-                  onIncreaseQuantity={handleIncreaseQuantity}
-                  onViewDetail={handleViewDetail}
-                />
-              ))
-            )}
-          </View>
+            </>
+          )}
         </ScrollView>
 
         {selectedService ? (
@@ -178,35 +248,18 @@ export default function ServicesCatalogScreen() {
             selectedService={selectedService}
             quantity={quantity}
             estimatedTotal={estimatedTotal}
-            onOpenOrderModal={() => {
-              setOrderConfirmed(false);
-              setIsModalVisible(true);
-            }}
+            onOpenOrderModal={() =>
+              router.push({
+                pathname: "/order",
+                params: {
+                  serviceId: selectedService.id,
+                  quantity: quantity.toString(),
+                },
+              })
+            }
           />
         ) : null}
       </View>
-
-      <PickupScheduleModal
-        visible={isModalVisible}
-        selectedService={selectedService}
-        quantity={quantity}
-        estimatedTotal={estimatedTotal}
-        pickupAddress={pickupAddress}
-        onAddressChange={setPickupAddress}
-        pickupDates={pickupDates}
-        selectedDateId={selectedDateId}
-        onSelectDate={setSelectedDateId}
-        selectedSlotId={selectedSlotId}
-        onSelectSlot={setSelectedSlotId}
-        orderNotes={orderNotes}
-        onNotesChange={setOrderNotes}
-        orderConfirmed={orderConfirmed}
-        onConfirmOrder={(_orderNum) => setOrderConfirmed(true)}
-        onClose={() => {
-          setIsModalVisible(false);
-          setOrderConfirmed(false);
-        }}
-      />
     </SafeAreaView>
   );
 }
@@ -223,12 +276,82 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   scrollContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: LAYOUT.screenPadding,
     paddingTop: 18,
   },
   servicesList: {
     gap: SPACING.md,
     marginTop: 8,
+  },
+  promoSection: {
+    gap: SPACING.sm,
+    marginBottom: SPACING.lg,
+  },
+  promoHeading: {
+    color: COLORS.textPrimary,
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  promoCard: {
+    backgroundColor: COLORS.brandOrangeSoft,
+    borderRadius: RADIUS.card,
+    borderWidth: 1,
+    borderColor: COLORS.brandOrange,
+    padding: SPACING.base,
+  },
+  promoCode: {
+    color: COLORS.textOnWarm,
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.4,
+  },
+  promoTitle: {
+    color: COLORS.textPrimary,
+    fontSize: 15,
+    fontWeight: "700",
+    marginTop: SPACING.xs,
+  },
+  promoDescription: {
+    color: COLORS.textSecondary,
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: SPACING.xs,
+  },
+  statusState: {
+    alignItems: "center",
+    backgroundColor: COLORS.surfacePrimary,
+    borderColor: COLORS.borderDefault,
+    borderRadius: RADIUS.card,
+    borderWidth: 1,
+    marginTop: SPACING.base,
+    padding: SPACING.xl,
+  },
+  statusTitle: {
+    color: COLORS.textPrimary,
+    fontSize: 16,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  statusSubtitle: {
+    color: COLORS.textSecondary,
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: SPACING.sm,
+    textAlign: "center",
+  },
+  retryButton: {
+    alignItems: "center",
+    backgroundColor: COLORS.brandBlue,
+    borderRadius: RADIUS.button,
+    justifyContent: "center",
+    marginTop: SPACING.base,
+    minHeight: TOUCH_TARGET.min,
+    paddingHorizontal: SPACING.xl,
+  },
+  retryButtonText: {
+    color: COLORS.textOnAccent,
+    fontSize: 14,
+    fontWeight: "700",
   },
   emptyState: {
     backgroundColor: COLORS.surfacePrimary,

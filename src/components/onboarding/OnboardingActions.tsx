@@ -1,7 +1,7 @@
 import { ArrowLeft } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { COLORS, RADIUS, TOUCH_TARGET } from "../../theme/tokens";
+import { COLORS, LAYOUT, RADIUS, TOUCH_TARGET } from "../../theme/tokens";
 
 type OnboardingActionsProps = {
   isFirstStep: boolean;
@@ -47,57 +47,55 @@ export default function OnboardingActions({
 
   return (
     <View style={styles.dualButtonContainer}>
-      {/* Back button container */}
-      <View style={styles.backButtonWrapper}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Kembali ke langkah sebelumnya"
-          onPress={onBack}
-          style={({ pressed }) => [
-            styles.fullSizeTouch,
-            pressed && styles.secondaryPressed,
-          ]}
-        >
-          {({ pressed }) => (
-            <View
-              style={[
-                styles.backButtonSurface,
-                pressed && styles.backButtonSurfacePressed,
-              ]}
-            >
-              <ArrowLeft size={22} color={COLORS.textPrimary} />
-            </View>
-          )}
-        </Pressable>
-      </View>
+        <View style={styles.backButtonWrapper}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Kembali ke langkah sebelumnya"
+            onPress={onBack}
+            style={({ pressed }) => [
+              styles.fullSizeTouch,
+              pressed && styles.secondaryPressed,
+            ]}
+          >
+            {({ pressed }) => (
+              <View
+                style={[
+                  styles.backButtonSurface,
+                  pressed && styles.backButtonSurfacePressed,
+                ]}
+              >
+                <ArrowLeft size={22} color={COLORS.textPrimary} />
+              </View>
+            )}
+          </Pressable>
+        </View>
 
-      {/* Primary Continue button */}
-      <View style={styles.continueButtonWrapper}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={
-            isLastStep
-              ? "Mulai menggunakan PJLaundry dan lihat katalog layanan"
-              : "Lanjut ke langkah pengenalan berikutnya"
-          }
-          onPress={onContinue}
-          style={({ pressed }) => [
-            styles.fullSizeTouch,
-            pressed && styles.primaryPressed,
-          ]}
-        >
-          {({ pressed }) => (
-            <View
-              style={[
-                styles.continueSurface,
-                pressed && styles.continueSurfacePressed,
-              ]}
-            >
-              <Text style={styles.continueText}>{continueLabel}</Text>
-            </View>
-          )}
-        </Pressable>
-      </View>
+        <View style={styles.continueButtonWrapper}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              isLastStep
+                ? "Mulai menggunakan PJLaundry dan lihat katalog layanan"
+                : "Lanjut ke langkah pengenalan berikutnya"
+            }
+            onPress={onContinue}
+            style={({ pressed }) => [
+              styles.fullSizeTouch,
+              pressed && styles.primaryPressed,
+            ]}
+          >
+            {({ pressed }) => (
+              <View
+                style={[
+                  styles.continueSurface,
+                  pressed && styles.continueSurfacePressed,
+                ]}
+              >
+                <Text style={styles.continueText}>{continueLabel}</Text>
+              </View>
+            )}
+          </Pressable>
+        </View>
     </View>
   );
 }
@@ -115,18 +113,18 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   backButtonWrapper: {
-    width: 52,
-    height: 52,
+    width: LAYOUT.controlHeight,
+    height: LAYOUT.controlHeight,
     flexShrink: 0,
   },
   continueButtonWrapper: {
     flex: 1,
-    minHeight: 52,
+    minHeight: LAYOUT.controlHeight,
     alignSelf: "stretch",
   },
   fullWidthTouch: {
     width: "100%",
-    minHeight: 52,
+    minHeight: LAYOUT.controlHeight,
     alignSelf: "stretch",
   },
   fullSizeTouch: {
@@ -136,8 +134,8 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
   },
   backButtonSurface: {
-    width: 52,
-    height: 52,
+    width: LAYOUT.controlHeight,
+    height: LAYOUT.controlHeight,
     borderRadius: RADIUS.button,
     backgroundColor: COLORS.surfacePrimary,
     alignItems: "center",
@@ -155,8 +153,8 @@ const styles = StyleSheet.create({
   },
   continueSurface: {
     width: "100%",
-    height: 52,
-    paddingHorizontal: 20,
+    height: LAYOUT.controlHeight,
+    paddingHorizontal: LAYOUT.screenPadding,
     borderRadius: RADIUS.button,
     backgroundColor: COLORS.brandBlue,
     alignItems: "center",

@@ -1,16 +1,20 @@
 {
   "expo": {
-    "name": "project_mobile",
-    "slug": "project_mobile",
+    "name": "PJLaundry",
+    "slug": "pjlaundry-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "projectmobile",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.pjlaundry.mobile",
+      "buildNumber": "1"
     },
     "android": {
+      "package": "com.pjlaundry.mobile",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -39,8 +43,7 @@
       "expo-web-browser"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
     }
   }
 }

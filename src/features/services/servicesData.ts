@@ -1,11 +1,4 @@
-import {
-  Footprints,
-  Layers,
-  PackageCheck,
-  Shirt,
-  WashingMachine,
-  Wind,
-} from "lucide-react-native";
+import type { LucideIcon } from "lucide-react-native";
 
 export type ServiceCategory = "all" | "kiloan" | "satuan" | "special";
 
@@ -18,7 +11,7 @@ export type LaundryService = {
   minOrder: number;
   maxOrder: number;
   duration: string;
-  icon: typeof WashingMachine;
+  icon: LucideIcon;
   isExpress?: boolean;
   tagline: string;
   features: string[];
@@ -38,151 +31,6 @@ export type PickupTimeOption = {
   note: string;
   cutOffHour: number; // Jam cut-off pemesanan untuk hari yang sama
 };
-
-export type SimulatedOrder = {
-  orderNumber: string;
-  serviceName: string;
-  quantity: number;
-  unit: string;
-  subtotal: number;
-  pickupFee: number;
-  total: number;
-  pickupAddress: string;
-  scheduleDate: string;
-  scheduleSlot: string;
-  orderNotes?: string;
-  status: "SIMULASI_TERKONFIRMASI";
-  timestamp: string;
-};
-
-export const MAX_ORDER_LIMITS = {
-  kiloan: 50,
-  satuan: 20,
-  special: 10,
-} as const;
-
-export const SERVICES: LaundryService[] = [
-  {
-    id: "kiloan-komplit",
-    name: "Kiloan Komplit",
-    category: "kiloan",
-    price: 8000,
-    unit: "kg",
-    minOrder: 3,
-    maxOrder: 50,
-    duration: "2 Hari",
-    icon: Layers,
-    tagline: "Cuci bersih, kering menyeluruh, dan setrika uap rapi.",
-    features: [
-      "Setrika uap halus anti kusut",
-      "Deterjen ramah serat kain",
-      "Kemas rapi per pack wangi",
-    ],
-  },
-  {
-    id: "kiloan-express",
-    name: "Kiloan Kilat 24 Jam",
-    category: "kiloan",
-    price: 13000,
-    unit: "kg",
-    minOrder: 3,
-    maxOrder: 50,
-    duration: "24 Jam",
-    icon: WashingMachine,
-    isExpress: true,
-    tagline: "Prioritas kilat untuk kebutuhan cucian mendesak.",
-    features: [
-      "Prioritas pengerjaan 1 mesin 1 pelanggan",
-      "Setrika uap mendalam",
-      "Antar jemput terjadwal tepat waktu",
-    ],
-  },
-  {
-    id: "kiloan-lipat",
-    name: "Cuci Lipat Hemat",
-    category: "kiloan",
-    price: 6000,
-    unit: "kg",
-    minOrder: 3,
-    maxOrder: 50,
-    duration: "2 Hari",
-    icon: Wind,
-    tagline: "Pilihan praktis dan ekonomis untuk pakaian harian.",
-    features: [
-      "Pencucian dan pengeringan 100%",
-      "Dipilah dan dilipat rapi",
-      "Aroma segar tahan lama",
-    ],
-  },
-  {
-    id: "satuan-kemeja",
-    name: "Kemeja & Blouse",
-    category: "satuan",
-    price: 15000,
-    unit: "pcs",
-    minOrder: 1,
-    maxOrder: 20,
-    duration: "2 Hari",
-    icon: Shirt,
-    tagline: "Perawatan presisi untuk kerah tegak dan kain halus.",
-    features: [
-      "Pembersihan noda membandel pada kerah",
-      "Setrika uap presisi tinggi",
-      "Gantungan baju (hanger) gratis",
-    ],
-  },
-  {
-    id: "satuan-jas",
-    name: "Jas & Blazer Formal",
-    category: "satuan",
-    price: 35000,
-    unit: "pcs",
-    minOrder: 1,
-    maxOrder: 10,
-    duration: "3 Hari",
-    icon: PackageCheck,
-    tagline: "Dry cleaning profesional menjaga struktur bahan.",
-    features: [
-      "Dry cleaning solvent khusus serat wol & jas",
-      "Anti susut dan anti jamur",
-      "Suit cover pelindung debu eksklusif",
-    ],
-  },
-  {
-    id: "special-bedcover",
-    name: "Bed Cover & Selimut",
-    category: "special",
-    price: 25000,
-    unit: "pcs",
-    minOrder: 1,
-    maxOrder: 10,
-    duration: "3 Hari",
-    icon: Layers,
-    tagline: "Pencucian menyeluruh bebas tungau dan debu serat.",
-    features: [
-      "Mesin kapasitas besar pencucian optimal",
-      "Pengeringan suhu terkontrol",
-      "Aroma menenangkan untuk tidur lelap",
-    ],
-  },
-  {
-    id: "special-sepatu",
-    name: "Sepatu Sneakers & Kulit",
-    category: "special",
-    price: 30000,
-    unit: "pasang",
-    minOrder: 1,
-    maxOrder: 10,
-    duration: "3 Hari",
-    icon: Footprints,
-    tagline: "Deep cleaning sol, upper, dan tali sepatu.",
-    features: [
-      "Pembersih khusus disesuaikan bahan sepatu",
-      "Treatment anti bakteri & bau kaki",
-      "Pengeringan non-heat anti retak sol",
-    ],
-  },
-];
 
 export const CATEGORIES: { id: ServiceCategory; label: string }[] = [
   { id: "all", label: "Semua" },
@@ -228,12 +76,6 @@ export const isSlotAvailable = (
   return currentHour < slot.cutOffHour;
 };
 
-export const generateDemoOrderNumber = (): string => {
-  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-  return `DEMO-PJL-${dateStr}-${randomSuffix}`;
-};
-
 export const getUpcomingPickupDates = (): PickupDateOption[] => {
   const monthNames = [
     "Jan",
@@ -273,3 +115,37 @@ export const getUpcomingPickupDates = (): PickupDateOption[] => {
     createOption(2, "day_after", "Lusa"),
   ];
 };
+
+export type DetergentOption = {
+  id: string;
+  name: string;
+  description: string;
+  extraPrice: number;
+};
+
+export const DETERGENT_OPTIONS: DetergentOption[] = [
+  {
+    id: "regular",
+    name: "Reguler Floral Fresh",
+    description: "Wangi bunga segar harian, bersih dan lembut",
+    extraPrice: 0,
+  },
+  {
+    id: "lavender",
+    name: "Lavender Relaxing",
+    description: "Aroma lavender menenangkan, tahan hingga 7 hari",
+    extraPrice: 3000,
+  },
+  {
+    id: "sensitive",
+    name: "Sensitive Skin / Baby",
+    description: "Bebas alergen, tanpa pewarna keras, lembut untuk bayi",
+    extraPrice: 5000,
+  },
+  {
+    id: "extra",
+    name: "Extra Wangi & Anti-Bakteri",
+    description: "Double konsentrat pewangi dengan proteksi kuman",
+    extraPrice: 4000,
+  },
+];

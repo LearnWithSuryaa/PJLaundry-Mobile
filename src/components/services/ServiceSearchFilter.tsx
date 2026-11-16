@@ -8,15 +8,19 @@ import {
   View,
 } from "react-native";
 
-import type { ServiceCategory } from "../../features/services/servicesData";
-import { CATEGORIES, SERVICES } from "../../features/services/servicesData";
-import { COLORS, RADIUS, SHADOWS, TOUCH_TARGET } from "../../theme/tokens";
+import {
+  CATEGORIES,
+  type LaundryService,
+  type ServiceCategory,
+} from "../../features/services/servicesData";
+import { COLORS, LAYOUT, RADIUS, SHADOWS, TOUCH_TARGET } from "../../theme/tokens";
 
 type ServiceSearchFilterProps = {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   selectedCategoryId: ServiceCategory;
   onSelectCategory: (categoryId: ServiceCategory) => void;
+  services: LaundryService[];
 };
 
 export default function ServiceSearchFilter({
@@ -24,6 +28,7 @@ export default function ServiceSearchFilter({
   onSearchChange,
   selectedCategoryId,
   onSelectCategory,
+  services,
 }: ServiceSearchFilterProps) {
   return (
     <View style={styles.container}>
@@ -88,8 +93,8 @@ export default function ServiceSearchFilter({
           const isActive = selectedCategoryId === cat.id;
           const count =
             cat.id === "all"
-              ? SERVICES.length
-              : SERVICES.filter((s) => s.category === cat.id).length;
+              ? services.length
+              : services.filter((s) => s.category === cat.id).length;
 
           return (
             <Pressable
@@ -189,7 +194,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.input,
     marginTop: 16,
     paddingHorizontal: 14,
-    minHeight: TOUCH_TARGET.min,
+    minHeight: LAYOUT.controlHeight,
     borderWidth: 1,
     borderColor: COLORS.borderDefault,
     ...SHADOWS.subtle,

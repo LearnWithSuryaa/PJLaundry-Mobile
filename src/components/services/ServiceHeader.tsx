@@ -1,53 +1,43 @@
 import { useRouter } from "expo-router";
-import { ArrowLeft } from "lucide-react-native";
+import { Building2 } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import BrandLogo from "../common/BrandLogo";
-import { COLORS, RADIUS, TOUCH_TARGET } from "../../theme/tokens";
+import { COLORS, LAYOUT, RADIUS, TOUCH_TARGET } from "../../theme/tokens";
 
 export default function ServiceHeader() {
   const router = useRouter();
 
-  const handleGoBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace("/");
-    }
-  };
-
   return (
     <View style={styles.header}>
+      <View style={styles.brandContainer}>
+        <BrandLogo size={28} subtitle="Katalog Layanan Resmi" />
+      </View>
+
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Kembali ke halaman sebelumnya"
-        onPress={handleGoBack}
+        accessibilityLabel="Buka daftar cabang outlet dan ulasan pelanggan"
+        onPress={() => router.push("/outlets" as any)}
         style={({ pressed }) => [
           styles.touchTarget,
           pressed && styles.pressed,
         ]}
       >
-        <View style={styles.backButtonSurface}>
-          <ArrowLeft size={20} color={COLORS.textPrimary} />
+        <View style={styles.outletButtonSurface}>
+          <Building2 size={18} color={COLORS.brandBlueDark} />
         </View>
       </Pressable>
-
-      <View style={styles.brandContainer}>
-        <BrandLogo size={28} subtitle="Katalog Layanan Resmi" />
-      </View>
-
-      <View style={styles.headerRightPlaceholder} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   header: {
-    minHeight: 64,
+    minHeight: LAYOUT.headerHeight,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: LAYOUT.screenPadding,
     paddingVertical: 10,
     backgroundColor: COLORS.surfacePrimary,
     borderBottomWidth: 1,
@@ -59,17 +49,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  backButtonSurface: {
+  outletButtonSurface: {
     width: 44,
     height: 44,
     borderRadius: RADIUS.input,
-    backgroundColor: COLORS.surfaceSecondary,
+    backgroundColor: COLORS.brandBlueSoft,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: COLORS.borderDefault,
+    borderColor: COLORS.brandBlue,
   },
   brandContainer: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },

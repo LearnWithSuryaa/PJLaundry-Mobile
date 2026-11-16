@@ -1,7 +1,9 @@
 import { Stack, useRouter } from "expo-router";
-import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
+  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -19,7 +21,9 @@ import OnboardingActions from "../components/onboarding/OnboardingActions";
 import OnboardingStep from "../components/onboarding/OnboardingStep";
 import PaginationDots from "../components/onboarding/PaginationDots";
 import { ONBOARDING_STEPS } from "../features/onboarding/onboardingData";
-import { COLORS, RADIUS, TOUCH_TARGET } from "../theme/tokens";
+import { COLORS, LAYOUT, RADIUS, TOUCH_TARGET } from "../theme/tokens";
+
+const ONBOARDING_COMPLETED_KEY = "@pjlaundry/onboarding-completed";
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -28,13 +32,32 @@ export default function OnboardingScreen() {
   const isCompact = width < 360 || height < 700;
 
   const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
   const isFirstStep = activeStepIndex === 0;
   const isLastStep = activeStepIndex === ONBOARDING_STEPS.length - 1;
   const activeStep = ONBOARDING_STEPS[activeStepIndex];
 
+  useEffect(() => {
+    AsyncStorage.getItem(ONBOARDING_COMPLETED_KEY)
+      .then((value) => {
+        if (value === "true") {
+          router.replace("/services");
+        }
+      })
+      .catch(() => {
+        // Keep onboarding visible when local storage cannot be read.
+      })
+      .finally(() => setIsCheckingOnboarding(false));
+  }, [router]);
+
+  const completeOnboarding = async () => {
+    await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, "true");
+    router.replace("/services");
+  };
+
   const handleContinue = () => {
     if (isLastStep) {
-      router.replace("/services");
+      void completeOnboarding();
       return;
     }
     setActiveStepIndex((prev) => prev + 1);
@@ -46,7 +69,7 @@ export default function OnboardingScreen() {
   };
 
   const handleSkip = () => {
-    router.replace("/services");
+    void completeOnboarding();
   };
 
   const handleSelectStep = (index: number) => {
@@ -57,29 +80,46 @@ export default function OnboardingScreen() {
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="dark" />
+      {isCheckingOnboarding ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator color={COLORS.brandBlueDark} />
+          <Text style={styles.loadingText}>Memuat aplikasi...</Text>
+        </View>
+      ) : (
 
       <View style={styles.container}>
         {/* Header with Official Logo & Accessible Skip Button */}
         <View style={styles.header}>
           <BrandLogo size={34} subtitle="Solusi Laundry Modern" />
 
-          {!isLastStep ? (
+          <View style={styles.headerActions}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Lewati pengenalan dan langsung ke katalog layanan"
-              onPress={handleSkip}
+              accessibilityLabel="Masuk atau daftar akun PJLaundry"
+              onPress={() => router.push("/auth")}
               style={({ pressed }) => [
-                styles.skipTouchTarget,
+                styles.loginTouchTarget,
                 pressed && styles.pressed,
               ]}
             >
-              <View style={styles.skipButtonSurface}>
-                <Text style={styles.skipText}>Lewati</Text>
-              </View>
+              <Text style={styles.loginText}>Masuk</Text>
             </Pressable>
-          ) : (
-            <View style={styles.skipPlaceholder} />
-          )}
+            {!isLastStep ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Lewati pengenalan dan langsung ke katalog layanan"
+                onPress={handleSkip}
+                style={({ pressed }) => [
+                  styles.skipTouchTarget,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <View style={styles.skipButtonSurface}>
+                  <Text style={styles.skipText}>Lewati</Text>
+                </View>
+              </Pressable>
+            ) : null}
+          </View>
         </View>
 
         {/* Scrollable Center Content */}
@@ -111,6 +151,7 @@ export default function OnboardingScreen() {
           />
         </View>
       </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -131,9 +172,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: LAYOUT.screenPadding,
     paddingTop: 8,
     paddingBottom: 6,
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  loginTouchTarget: {
+    minWidth: TOUCH_TARGET.min,
+    minHeight: TOUCH_TARGET.min,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loginText: {
+    color: COLORS.brandBlueDark,
+    fontSize: 13,
+    fontWeight: "700",
   },
   skipTouchTarget: {
     minWidth: TOUCH_TARGET.min,
@@ -176,5 +233,15 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.75,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+  },
+  loadingText: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
   },
 });
