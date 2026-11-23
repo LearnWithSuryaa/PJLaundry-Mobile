@@ -3,7 +3,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { LaundryService } from "../../features/services/servicesData";
 import { formatRupiah } from "../../features/services/servicesData";
-import { COLORS, RADIUS, SHADOWS, TOUCH_TARGET } from "../../theme/tokens";
+import { COLORS, LAYOUT, RADIUS, SHADOWS, TOUCH_TARGET } from "../../theme/tokens";
 
 type ServiceBottomBarProps = {
   selectedService: LaundryService;
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: COLORS.borderDefault,
     paddingTop: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: LAYOUT.screenPadding,
     ...SHADOWS.card,
   },
   bottomBarContent: {

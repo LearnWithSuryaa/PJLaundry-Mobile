@@ -54,6 +54,12 @@ export const TOUCH_TARGET = {
   min: 48,
 } as const;
 
+export const LAYOUT = {
+  screenPadding: 20,
+  controlHeight: 52,
+  headerHeight: 64,
+} as const;
+
 export const SHADOWS = {
   subtle: {
     shadowColor: "#172033",

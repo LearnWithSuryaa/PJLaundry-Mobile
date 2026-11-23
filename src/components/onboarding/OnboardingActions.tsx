@@ -1,7 +1,7 @@
 import { ArrowLeft } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { COLORS, RADIUS, TOUCH_TARGET } from "../../theme/tokens";
+import { COLORS, LAYOUT, RADIUS, TOUCH_TARGET } from "../../theme/tokens";
 
 type OnboardingActionsProps = {
   isFirstStep: boolean;
@@ -113,18 +113,18 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   backButtonWrapper: {
-    width: 52,
-    height: 52,
+    width: LAYOUT.controlHeight,
+    height: LAYOUT.controlHeight,
     flexShrink: 0,
   },
   continueButtonWrapper: {
     flex: 1,
-    minHeight: 52,
+    minHeight: LAYOUT.controlHeight,
     alignSelf: "stretch",
   },
   fullWidthTouch: {
     width: "100%",
-    minHeight: 52,
+    minHeight: LAYOUT.controlHeight,
     alignSelf: "stretch",
   },
   fullSizeTouch: {
@@ -134,8 +134,8 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
   },
   backButtonSurface: {
-    width: 52,
-    height: 52,
+    width: LAYOUT.controlHeight,
+    height: LAYOUT.controlHeight,
     borderRadius: RADIUS.button,
     backgroundColor: COLORS.surfacePrimary,
     alignItems: "center",
@@ -153,8 +153,8 @@ const styles = StyleSheet.create({
   },
   continueSurface: {
     width: "100%",
-    height: 52,
-    paddingHorizontal: 20,
+    height: LAYOUT.controlHeight,
+    paddingHorizontal: LAYOUT.screenPadding,
     borderRadius: RADIUS.button,
     backgroundColor: COLORS.brandBlue,
     alignItems: "center",

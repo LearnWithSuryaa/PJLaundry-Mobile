@@ -23,12 +23,11 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-import PickupScheduleModal from "../../components/services/PickupScheduleModal";
 import {
   formatRupiah,
-  getUpcomingPickupDates,
-  SERVICES,
 } from "../../features/services/servicesData";
+import { getServices } from "../../features/services/servicesApi";
+import type { LaundryService } from "../../features/services/servicesData";
 import { COLORS, RADIUS, SHADOWS, TOUCH_TARGET } from "../../theme/tokens";
 
 type SpeedOption = "regular" | "express";
@@ -40,10 +39,26 @@ export default function ServiceDetailScreen() {
   // 4. useLocalSearchParams<{ id: string }>() untuk menangkap ID paket laundry
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  // Cari data layanan berdasarkan id dari URL dinamis
+  const [services, setServices] = useState<LaundryService[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getServices()
+      .then(setServices)
+      .catch((error: unknown) => {
+        setLoadError(
+          error instanceof Error
+            ? error.message
+            : "Detail layanan tidak dapat dimuat.",
+        );
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
+
   const service = useMemo(() => {
-    return SERVICES.find((s) => s.id === id);
-  }, [id]);
+    return services.find((item) => item.id === id);
+  }, [id, services]);
 
   // 1. useState: Counter perkiraan berat cucian (kg/pcs) dan opsi kecepatan paket
   const [quantity, setQuantity] = useState<number>(
@@ -57,17 +72,16 @@ export default function ServiceDetailScreen() {
     "Selesai dalam 48 jam kerja",
   );
 
-  // Modal Booking State
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [orderConfirmed, setOrderConfirmed] = useState(false);
-  const [pickupAddress, setPickupAddress] = useState(
-    "Jl. Melati No. 18, Kebayoran Baru",
-  );
-  const [selectedDateId, setSelectedDateId] = useState<string>("today");
-  const [selectedSlotId, setSelectedSlotId] = useState<string>("pagi");
-  const [orderNotes, setOrderNotes] = useState("");
+  useEffect(() => {
+    if (service) {
+      const timer = setTimeout(() => {
+        setQuantity(service.minOrder);
+        setSpeedOption(service.isExpress ? "express" : "regular");
+      }, 0);
 
-  const pickupDates = useMemo(() => getUpcomingPickupDates(), []);
+      return () => clearTimeout(timer);
+    }
+  }, [service]);
 
   // 2. useEffect: Mengupdate estimasi waktu pengerjaan otomatis saat paket dipilih
   useEffect(() => {
@@ -91,8 +105,8 @@ export default function ServiceDetailScreen() {
   // Layanan lain untuk rekomendasi (eksplorasi layanan)
   const relatedServices = useMemo(() => {
     if (!service) return [];
-    return SERVICES.filter((s) => s.id !== service.id).slice(0, 3);
-  }, [service]);
+    return services.filter((s) => s.id !== service.id).slice(0, 3);
+  }, [service, services]);
 
   // Hitung harga per unit sesuai kecepatan (Express +Rp 5.000/unit jika bukan default express)
   const effectivePrice = useMemo(() => {
@@ -117,9 +131,20 @@ export default function ServiceDetailScreen() {
   };
 
   // State jika layanan tidak ditemukan
-  if (!service) {
+  if (isLoading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={["top", "right", "bottom", "left"]}>
+        <Stack.Screen options={{ title: "Detail Layanan", headerShown: true }} />
+        <View style={styles.notFoundContainer}>
+          <Text style={styles.notFoundSubtitle}>Memuat detail layanan...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (loadError || !service) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={["top", "right", "bottom", "left"]}>
         {/* 5. Mengonfigurasi Stack.Screen title Detail Layanan */}
         <Stack.Screen
           options={{
@@ -130,9 +155,9 @@ export default function ServiceDetailScreen() {
           }}
         />
         <View style={styles.notFoundContainer}>
-          <Text style={styles.notFoundTitle}>Layanan Tidak Ditemukan</Text>
+          <Text style={styles.notFoundTitle}>          {loadError ? "Detail Layanan Tidak Tersedia" : "Layanan Tidak Ditemukan"}</Text>
           <Text style={styles.notFoundSubtitle}>
-            Paket layanan dengan ID &quot;{id}&quot; tidak terdaftar di katalog.
+          {loadError ?? `Paket layanan dengan ID "${id}" tidak terdaftar di katalog.`}
           </Text>
           {/* 3. router.back() kembali ke katalog */}
           <Pressable
@@ -539,10 +564,15 @@ export default function ServiceDetailScreen() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Pesan layanan sekarang, total ${formatRupiah(estimatedTotal)}`}
-              onPress={() => {
-                setOrderConfirmed(false);
-                setIsModalVisible(true);
-              }}
+              onPress={() =>
+                router.push({
+                  pathname: "/order",
+                  params: {
+                    serviceId: service.id,
+                    quantity: quantity.toString(),
+                  },
+                })
+              }
               style={({ pressed }) => [
                 styles.orderButtonTouch,
                 pressed && styles.pressed,
@@ -556,32 +586,6 @@ export default function ServiceDetailScreen() {
         </View>
       </View>
 
-      {/* Booking / Pickup Schedule Modal */}
-      <PickupScheduleModal
-        visible={isModalVisible}
-        selectedService={{
-          ...service,
-          price: effectivePrice,
-          duration: estimatedDuration,
-        }}
-        quantity={quantity}
-        estimatedTotal={estimatedTotal}
-        pickupAddress={pickupAddress}
-        onAddressChange={setPickupAddress}
-        pickupDates={pickupDates}
-        selectedDateId={selectedDateId}
-        onSelectDate={setSelectedDateId}
-        selectedSlotId={selectedSlotId}
-        onSelectSlot={setSelectedSlotId}
-        orderNotes={orderNotes}
-        onNotesChange={setOrderNotes}
-        orderConfirmed={orderConfirmed}
-        onConfirmOrder={(_orderNum) => setOrderConfirmed(true)}
-        onClose={() => {
-          setIsModalVisible(false);
-          setOrderConfirmed(false);
-        }}
-      />
     </SafeAreaView>
   );
 }
