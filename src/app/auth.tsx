@@ -18,25 +18,33 @@ import { COLORS, RADIUS, SPACING, TOUCH_TARGET } from "../theme/tokens";
 
 export default function AuthScreen() {
   const router = useRouter();
-  const { configError, signIn } = useAuth();
+  const { configError, signIn, signUp } = useAuth();
+  const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     const normalizedEmail = email.trim();
     setErrorMessage(null);
+    setSuccessMessage(null);
 
     if (!normalizedEmail || password.length < 6) {
-      setErrorMessage("Masukkan email dan password minimal 6 karakter.");
+      setErrorMessage("Masukkan email valid dan password minimal 6 karakter.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await signIn(normalizedEmail, password);
-      router.replace("/services");
+      if (isSignUpMode) {
+        await signUp(normalizedEmail, password);
+        setSuccessMessage("Pendaftaran berhasil! Silakan periksa email untuk konfirmasi atau masuk ke akun.");
+      } else {
+        await signIn(normalizedEmail, password);
+        router.replace("/services");
+      }
     } catch (error: unknown) {
       console.warn("[Auth Warning]:", error);
       setErrorMessage(
@@ -76,10 +84,45 @@ export default function AuthScreen() {
 
           <View style={styles.heading}>
             <Text style={styles.eyebrow}>PJLaundry</Text>
-            <Text style={styles.title}>Masuk ke akunmu</Text>
-            <Text style={styles.subtitle}>
-              Simpan pesanan dan lanjutkan transaksi laundry dengan aman.
+            <Text style={styles.title}>
+              {isSignUpMode ? "Buat akun baru" : "Masuk ke akunmu"}
             </Text>
+            <Text style={styles.subtitle}>
+              {isSignUpMode
+                ? "Daftar untuk menikmati layanan laundry mudah dan tracking pesanan."
+                : "Simpan pesanan dan lanjutkan transaksi laundry dengan aman."}
+            </Text>
+          </View>
+
+          {/* Mode Switcher Tabs */}
+          <View style={styles.tabSwitchContainer}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setIsSignUpMode(false);
+                setErrorMessage(null);
+                setSuccessMessage(null);
+              }}
+              style={[styles.tabSwitchBtn, !isSignUpMode && styles.tabSwitchBtnActive]}
+            >
+              <Text style={[styles.tabSwitchText, !isSignUpMode && styles.tabSwitchTextActive]}>
+                Masuk (Sign In)
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                setIsSignUpMode(true);
+                setErrorMessage(null);
+                setSuccessMessage(null);
+              }}
+              style={[styles.tabSwitchBtn, isSignUpMode && styles.tabSwitchBtnActive]}
+            >
+              <Text style={[styles.tabSwitchText, isSignUpMode && styles.tabSwitchTextActive]}>
+                Daftar (Sign Up)
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {configError ? (
@@ -125,17 +168,27 @@ export default function AuthScreen() {
             </View>
           ) : null}
 
-          {/* Tombol Masuk Utama - Menggunakan TouchableOpacity Solid dengan background tegas */}
+          {successMessage ? (
+            <View style={styles.messageSuccess}>
+              <Text style={styles.messageSuccessText}>{successMessage}</Text>
+            </View>
+          ) : null}
+
+          {/* Tombol Aksi Utama (Sign In / Sign Up) */}
           <TouchableOpacity
             activeOpacity={0.8}
             accessibilityRole="button"
-            accessibilityLabel="Masuk ke akun"
+            accessibilityLabel={isSignUpMode ? "Daftar akun baru" : "Masuk ke akun"}
             disabled={isSubmitting}
             onPress={handleSubmit}
             style={[styles.mainButton, isSubmitting && styles.disabled]}
           >
             <Text style={styles.mainButtonText}>
-              {isSubmitting ? "Memproses..." : "Masuk ke Akun"}
+              {isSubmitting
+                ? "Memproses..."
+                : isSignUpMode
+                  ? "Daftar Akun Baru"
+                  : "Masuk ke Akun"}
             </Text>
           </TouchableOpacity>
 
@@ -170,7 +223,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   backButtonText: { color: "#0284C7", fontSize: 15, fontWeight: "700" },
-  heading: { marginBottom: SPACING.xl },
+  heading: { marginBottom: SPACING.md },
   eyebrow: {
     color: "#0284C7",
     fontSize: 14,
@@ -184,6 +237,46 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginTop: SPACING.sm,
   },
+  tabSwitchContainer: {
+    flexDirection: "row",
+    backgroundColor: "#E2E8F0",
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: SPACING.lg,
+  },
+  tabSwitchBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+  },
+  tabSwitchBtnActive: {
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  tabSwitchText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#64748B",
+  },
+  tabSwitchTextActive: {
+    color: "#0284C7",
+    fontWeight: "700",
+  },
+  messageSuccess: {
+    backgroundColor: "#DCFCE7",
+    borderColor: "#22C55E",
+    borderWidth: 1,
+    borderRadius: 10,
+    marginTop: SPACING.base,
+    padding: SPACING.base,
+  },
+  messageSuccessText: { color: "#15803D", fontSize: 13, lineHeight: 19, fontWeight: "600" },
   form: { gap: SPACING.base },
   field: { gap: SPACING.sm },
   label: { color: "#0F172A", fontSize: 14, fontWeight: "600" },

@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { createClient } from "@supabase/supabase-js";
 import { Platform } from "react-native";
 
@@ -6,6 +6,32 @@ import { Platform } from "react-native";
 const rawUrl = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim();
 const cleanUrl = rawUrl?.split(" ")[0]?.trim();
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY?.trim();
+
+// SecureStore Adapter untuk Secure Token Storage (iOS Keychain & Android KeyStore)
+const ExpoSecureStoreAdapter = {
+  getItem: async (key: string): Promise<string | null> => {
+    try {
+      return await SecureStore.getItemAsync(key);
+    } catch (err) {
+      console.warn("[SecureStore Error]: Gagal mengambil token:", err);
+      return null;
+    }
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    try {
+      await SecureStore.setItemAsync(key, value);
+    } catch (err) {
+      console.warn("[SecureStore Error]: Gagal menyimpan token:", err);
+    }
+  },
+  removeItem: async (key: string): Promise<void> => {
+    try {
+      await SecureStore.deleteItemAsync(key);
+    } catch (err) {
+      console.warn("[SecureStore Error]: Gagal menghapus token:", err);
+    }
+  },
+};
 
 const serverStorage = {
   getItem: async () => null,
@@ -18,7 +44,7 @@ const authStorage =
     ? serverStorage
     : Platform.OS === "web"
       ? window.localStorage
-      : AsyncStorage;
+      : ExpoSecureStoreAdapter;
 
 function initSupabase() {
   if (!cleanUrl || !supabaseAnonKey) {
